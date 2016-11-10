@@ -1,2 +1,2 @@
 # ProceduralPlanetarySystems
-Procedurally generating planetary systems
+Procedurally generated planetary systems using THREE.js

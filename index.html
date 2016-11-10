@@ -1,0 +1,302 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<title>Procedural Planetary Systems</title>
+		<script type="text/javascript" src="js/three.r81-tweaked.js"></script>
+		<script type="text/javascript" src="js/OrbitControls.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script type="text/javascript" src="js/constants.js"></script>
+		<script type="text/javascript" src="js/helperFunctions.js"></script>
+		<script type="text/javascript" src="js/bodyHelperFunctions.js"></script>
+		<script type="text/javascript" src="js/sphereCreation.js"></script>
+		<script type="text/javascript" src="js/bodyCreation.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+
+		<script id="vertexShader" type="x-shader/x-vertex">
+			varying vec3 interpolatedLocalPosition; //We interpolate the local position of fragment
+			varying vec3 interpolatedPosition; //We interpolate the position
+			varying vec3 interpolatedNormal;   //We interpolate the normal
+			varying mat3 nMtrx; 
+			
+			void main() {
+				interpolatedLocalPosition = position;
+				interpolatedPosition = (modelViewMatrix * vec4(position, 1.0)).xyz; //Replace these 2 lines
+				interpolatedNormal = normalize(normalMatrix * normal);
+				nMtrx = normalMatrix;
+				
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+			}
+		</script>
+		
+		<script id="starFragmentShader" type="x-shader/x-fragment">
+			varying vec3 interpolatedLocalPosition;
+			uniform vec3 lightPosition;
+			uniform vec3 starColorDark;
+			uniform vec3 starColorMed;
+			uniform vec3 starColorLight;
+			uniform float starAnimation;
+			uniform float starAnimation2;
+			varying vec3 interpolatedPosition;
+			varying vec3 interpolatedNormal;
+			varying mat3 nMtrx;
+			
+			//Source: https://www.shadertoy.com/view/Xsl3Dl
+			vec3 hash(vec3 p) {
+				p = vec3( dot(p, vec3(127.1,311.7, 74.7)),
+						  dot(p, vec3(269.5,163.3,226.1)),
+						  dot(p, vec3(113.5,271.9,124.6)));
+						  
+				return -1.0 + 2.0*fract(sin(p)*43758.5453123);
+			}
+			
+			//Source: https://www.shadertoy.com/view/Xsl3Dl
+			float noise(in vec3 p) {
+				vec3 i = floor( p );
+				vec3 f = fract( p );
+				
+				//vec3 u = f*f*(3.0-2.0*f);
+				vec3 u = f*f*(3.0-2.0*f);
+
+				return mix( mix( mix( dot( hash( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), 
+									  dot( hash( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),
+								 mix( dot( hash( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), 
+									  dot( hash( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),
+							mix( mix( dot( hash( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), 
+									  dot( hash( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),
+								 mix( dot( hash( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), 
+									  dot( hash( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
+			}
+			
+			float planetSurfaceNoise (in vec3 p){
+				float f = 0.0;
+				f += 1.0 * noise(3.0 * p);
+				//f += 1.0 * noise(4.0 * p);	//for planet/rocky moon
+				f += 0.5 * noise(10.0 * p);
+				f -= 0.5 * noise(30.0 * p);
+				return f;
+			}
+			
+			void main() {
+				
+				float f = planetSurfaceNoise(interpolatedLocalPosition);
+				f +=  1.0 * noise(4.0 * interpolatedLocalPosition + vec3(starAnimation) * 1.0);
+				f +=  0.5 * noise(33.0 * interpolatedLocalPosition + vec3(starAnimation2) * 5.0);
+				
+				float f2 = 0.0;
+				f2 += 1.0 * noise(3.0 * interpolatedLocalPosition + vec3(3,3,3));
+				f2 += 0.5 * noise(15.0 * interpolatedLocalPosition + vec3(3,3,3));
+				f2 += 0.5 * noise(33.0 * interpolatedLocalPosition + vec3(3,3,3));
+				
+				vec2 gradient = vec2((planetSurfaceNoise(interpolatedLocalPosition - vec3(0.01, 0.0, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.01, 0.0, 0.0))),
+									(planetSurfaceNoise(interpolatedLocalPosition - vec3(0.0, 0.01, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.00, 0.01, 0.0))));
+				
+				vec3 normalShift = vec3(gradient ,0.0);
+				
+				vec3 n = normalize(interpolatedNormal + normalShift);
+				vec3 vertexPosition = interpolatedPosition;
+				vec3 lightDir = normalize(lightPosition - vertexPosition);
+				vec3 viewerDir = normalize(-vertexPosition);
+				vec3 reflection = reflect(-lightDir,n);
+				vec3 h = normalize(lightDir + viewerDir);
+				
+				vec3 color;
+				if (f<=-0.1){
+					color = max(0.0, dot(viewerDir,h)) * starColorDark;
+				} else if (f<0.05) {
+					color =  max(0.0, dot(viewerDir,h)) * starColorMed;
+				} else if (f<0.4) {
+					color = max(0.0, dot(viewerDir,h)) *  starColorLight;
+				} else {
+					color = max(0.0, dot(viewerDir,h)) *  vec3(1.0, 1.0, 1.0);
+				}
+				
+				color += f + 0.5;
+				
+				gl_FragColor = vec4(color, 1.0);
+			}
+		</script>
+		
+		<script id="earthlikeFragmentShader" type="x-shader/x-fragment">
+			varying vec3 interpolatedLocalPosition;
+			uniform vec3 lightPosition;
+			uniform vec3 waterColor;
+			uniform vec3 atmosphereColor;
+			uniform vec3 groundColor;
+			uniform vec3 groundColor2;
+			uniform vec3 groundColor3;
+			uniform float waterLevel;
+			varying vec3 interpolatedPosition;
+			varying vec3 interpolatedNormal;
+			varying mat3 nMtrx;
+			
+			//Source: https://www.shadertoy.com/view/Xsl3Dl
+			vec3 hash(vec3 p) {
+				p = vec3( dot(p, vec3(127.1,311.7, 74.7)),
+						  dot(p, vec3(269.5,163.3,226.1)),
+						  dot(p, vec3(113.5,271.9,124.6)));
+						  
+				return -1.0 + 2.0*fract(sin(p)*43758.5453123);
+			}
+			
+			//Source: https://www.shadertoy.com/view/Xsl3Dl
+			float noise(in vec3 p) {
+				vec3 i = floor( p );
+				vec3 f = fract( p );
+				
+				//vec3 u = f*f*(3.0-2.0*f);
+				vec3 u = f*f*(3.0-2.0*f);
+
+				return mix( mix( mix( dot( hash( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), 
+									  dot( hash( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),
+								 mix( dot( hash( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), 
+									  dot( hash( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),
+							mix( mix( dot( hash( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), 
+									  dot( hash( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),
+								 mix( dot( hash( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), 
+									  dot( hash( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
+			}
+			
+			float planetSurfaceNoise (in vec3 p){
+				float f = 0.0;
+				f += 1.0 * noise(3.0 * p);
+				f += 1.0 * noise(4.0 * p);
+				f += 0.5 * noise(10.0 * p);
+				f -= 0.5 * noise(30.0 * p);
+				return f;
+			}
+			
+			void main() {
+				
+				float f = planetSurfaceNoise(interpolatedLocalPosition);
+				
+				float f2 = 0.0;
+				f2 += 1.0 * noise(3.0 * interpolatedLocalPosition + vec3(3,3,3));
+				f2 += 0.5 * noise(15.0 * interpolatedLocalPosition + vec3(3,3,3));
+				f2 += 0.5 * noise(33.0 * interpolatedLocalPosition + vec3(3,3,3));
+				
+				vec2 gradient = vec2((planetSurfaceNoise(interpolatedLocalPosition - vec3(0.01, 0.0, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.01, 0.0, 0.0))),
+									(planetSurfaceNoise(interpolatedLocalPosition - vec3(0.0, 0.01, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.00, 0.01, 0.0))));
+				
+				vec3 normalShift = vec3(2.0 * gradient ,0.0) * nMtrx;
+				
+				vec3 n = normalize(interpolatedNormal + normalShift);
+				vec3 vertexPosition = interpolatedPosition;
+				vec3 lightDir = normalize(lightPosition - vertexPosition);
+				vec3 viewerDir = normalize(-vertexPosition);
+				vec3 reflection = reflect(-lightDir,n);
+				vec3 h = normalize(lightDir + viewerDir);
+				
+				vec3 color;
+				if (f<=waterLevel){
+					color = max(0.0, dot(interpolatedNormal,lightDir)) * waterColor;
+				} else if (f<waterLevel + 0.05) {
+					color = max(0.0, dot(n,lightDir)) * groundColor3;
+				} else if (f<waterLevel + 0.1) {
+					color = max(0.0, dot(n,lightDir)) * groundColor;
+				} else if (f<waterLevel + 0.6) {
+					color = max(0.0, dot(n,lightDir)) * groundColor2;
+				} else {
+					color = max(0.0, dot(n,lightDir)) * vec3(0.9);
+				}
+				
+				color += max(0.0, dot(interpolatedNormal,lightDir)) * atmosphereColor * pow((1.0 - max(0.0, dot(interpolatedNormal, viewerDir))), 1.0);		//ATMOSPHERIC EFFECTS
+				color += vec3(1.0, 1.0, 1.0)*max(0.0, f2)*max(0.0, dot(interpolatedNormal,lightDir));
+				
+				gl_FragColor = vec4(color, 1.0);
+			}
+		</script>
+		
+		<script id="rockyFragmentShader" type="x-shader/x-fragment">
+			varying vec3 interpolatedLocalPosition;
+			uniform vec3 lightPosition;
+			uniform vec3 bodyColor;
+			varying vec3 interpolatedPosition;
+			varying vec3 interpolatedNormal;
+			varying mat3 nMtrx;
+			
+			//Source: https://www.shadertoy.com/view/Xsl3Dl
+			vec3 hash(vec3 p) {
+				p = vec3( dot(p, vec3(127.1,311.7, 74.7)),
+						  dot(p, vec3(269.5,163.3,226.1)),
+						  dot(p, vec3(113.5,271.9,124.6)));
+						  
+				return -1.0 + 2.0*fract(sin(p)*43758.5453123);
+			}
+			
+			//Source: https://www.shadertoy.com/view/Xsl3Dl
+			float noise(in vec3 p) {
+				vec3 i = floor( p );
+				vec3 f = fract( p );
+				
+				//vec3 u = f*f*(3.0-2.0*f);
+				vec3 u = f*f*(3.0-2.0*f);
+
+				return mix( mix( mix( dot( hash( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), 
+									  dot( hash( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),
+								 mix( dot( hash( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), 
+									  dot( hash( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),
+							mix( mix( dot( hash( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), 
+									  dot( hash( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),
+								 mix( dot( hash( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), 
+									  dot( hash( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
+			}
+			
+			float planetSurfaceNoise (in vec3 p){
+				float f = 0.0;
+				f += 1.0 * noise(3.0 * p);
+				f += 1.0 * noise(4.0 * p);
+				f += 0.5 * noise(10.0 * p);
+				f -= 0.5 * noise(30.0 * p);
+				return f;
+			}
+			
+			void main() {
+				
+				float f = planetSurfaceNoise(interpolatedLocalPosition);
+				
+				vec2 gradient = vec2((planetSurfaceNoise(interpolatedLocalPosition - vec3(0.01, 0.0, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.01, 0.0, 0.0))),
+									(planetSurfaceNoise(interpolatedLocalPosition - vec3(0.0, 0.01, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.00, 0.01, 0.0))));
+				
+				vec3 normalShift = vec3(gradient*2.0 ,0.0);
+				
+				vec3 n = normalize(interpolatedNormal + normalShift);
+				vec3 vertexPosition = interpolatedPosition;
+				vec3 lightDir = normalize(lightPosition - vertexPosition);
+				vec3 viewerDir = normalize(-vertexPosition);
+				vec3 reflection = reflect(-lightDir,n);
+				vec3 h = normalize(lightDir + viewerDir);
+				
+				vec3 color;
+				color = max(0.0, dot(n,lightDir)) * bodyColor;
+				
+				gl_FragColor = vec4(color, 1.0);
+			}
+		</script>
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body onload="onLoad()">
+		<div id="canvasContainer"></div>
+		<div id="infoContainer" style="position: absolute; background-color: rgba(0,0,0,0.5); color: white; left: 20px; top: 20px; padding-left: 10px; padding-right: 10px;">
+			<p id="body-class"></p>
+			<p id="body-mass"></p>
+			<p id="body-radius"></p>
+		</div>
+		<div id="tempContainer" style="position: absolute; background-color: rgba(0,0,0,0.5); color: white; right: 20px; top: 20px; padding-left: 10px; padding-right: 10px;">
+			<p id="body-radius">//TODO: Hiljem võiks siia panna nupud/sliderid</p>
+			<p id="body-class">A/D - change orbit scale</p>
+			<p id="body-mass">Q/E - change speedscale</p>
+			<p id="body-mass">LMB - rotate view</p>
+			<p id="body-mass">RMB/Arrow Keys - pan view</p>
+			<p id="body-mass">Space - make camera track the active body<br>
+			(the one displayed in the upper-left corner)
+			</p>
+		</div>
+	</body>
+</html>
