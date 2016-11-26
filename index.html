@@ -273,6 +273,16 @@
 			}
 		</script>
 		<style>
+			p{
+                color: #fff;
+                border: none
+                background: none;
+            }
+            p:hover{
+                background-color: #fff;
+                color: #000;
+                cursor: pointer;
+            }
 			body {
 				font-family: Monospace;
 				background-color: #000;
@@ -288,6 +298,12 @@
 			<p id="body-mass"></p>
 			<p id="body-radius"></p>
 		</div>
+		<div style="position: absolute; background-color: rgba(0,0,0,0.5); color: white; left: 20px; bottom: 20px; padding-left: 10px; padding-right: 10px;">
+        <p id = "showhideList" onclick="showhidePlanetList()">SHOW PLANET LIST</p>
+        <div id="planetContainer" style="display: none">
+            -----------------
+        </div>
+        </div>
 		<div id="tempContainer" style="position: absolute; background-color: rgba(0,0,0,0.5); color: white; right: 20px; top: 20px; padding-left: 10px; padding-right: 10px;">
 			<p id="body-radius">//TODO: Hiljem võiks siia panna nupud/sliderid</p>
 			<p id="body-class">A/D - change orbit scale</p>
@@ -298,5 +314,18 @@
 			(the one displayed in the upper-left corner)
 			</p>
 		</div>
+		<script>
+            var shown = false;
+            function showhidePlanetList(){
+                if (shown){
+                    $("#showhideList").text("SHOW BODY LIST");
+                    shown = false;
+                } else {
+                    $("#showhideList").text("HIDE BODY LIST");
+                    shown = true;
+                }
+                $("#planetContainer").slideToggle("slow");
+            }
+        </script>
 	</body>
 </html>

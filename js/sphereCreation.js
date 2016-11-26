@@ -34,17 +34,16 @@ function createSphereStar(colors) {
  */
  
 //TODO : Pass colors and waterLevel as arguments
-function createSphereEarthlike() {
+function createSphereEarthlike(waterLevel) {
 	var geometry = new THREE.SphereGeometry(1, 20, 16);
 
-	var colorWater = new THREE.Color(0x283B5E);
+	var colorWater = new THREE.Color(waterColors[randomInt(3)]);
 	var colorAtmosphere = new THREE.Color(0x66d5ed);
-	var color1 = new THREE.Color(0x538d46);
-	var color2 = new THREE.Color(0x43693a);
-	var color3 = new THREE.Color(0x4b4333);
-	var waterLevel = 0.0; //higher value = more water. if it's like -1 or less then there is no water (could be used to create kinda interesting planets as well probably)
-							//though it must be noted that all planets created with this function will have atmospheric effects (clouds, rimlight)
-							//probably should also add a "cloudLevel" uniform to control how many clouds there are...
+	var terrainColor = terrainColors[randomInt(2)];
+	
+	var color1 = new THREE.Color(terrainColor[2]);
+	var color2 = new THREE.Color(terrainColor[1]);
+	var color3 = new THREE.Color(terrainColor[0]);
 	
 	var material = new THREE.ShaderMaterial({
 		uniforms: {
@@ -72,15 +71,15 @@ function createSphereEarthlike() {
  */
  
 //TODO : Pass color as an arguments
-function createSphereRockyBody() {
+function createSphereRockyBody(color) {
 	var geometry = new THREE.SphereGeometry(1, 20, 16);
-
-	var color3 = new THREE.Color(0x4b4333);
+	
+	var colorN = new THREE.Color(color);
 	
 	var material = new THREE.ShaderMaterial({
 		uniforms: {
 			lightPosition: { value: lightPosition },
-			bodyColor: { value: color3 },
+			bodyColor: { value: colorN },
 		},
 		vertexShader: vertexShader,
 		fragmentShader: rockybodyFragmentShader

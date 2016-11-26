@@ -61,3 +61,24 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize( window.innerWidth, window.innerHeight );
 }
+
+/**
+ * Returns a random integer
+ *
+ * @n - end of range
+ * @return - integer from the range [0, n]
+ */
+
+function randomInt(n) {
+    return Math.floor((Math.random() * (n + 1)))
+}
+
+/**
+ * Rounds a float to two decimals
+ *
+ * @n - float to round
+ * @return - n rounded to two decimals
+ */
+function roundToTwoDecimals(n) {
+    return Math.round(n * 100) / 100
+}

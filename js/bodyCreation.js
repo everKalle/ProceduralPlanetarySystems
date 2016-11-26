@@ -22,10 +22,27 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 	
 	var planet = new THREE.Mesh();
 	
-	var sphere = createSphereEarthlike();
+	var waterLevel = 1.0 - (Math.random() * 1.2);
+	
+	var sphere = createSphereEarthlike(waterLevel);
 	sphere.scale.set(radius * 2, radius * 2, radius * 2);
 	sphere.name = "NonStellar";
-	sphere.UserData = {'type': 'Earth-Like Planet', 'mass': 1.2, 'radius': radius, 'rotationalSpeed': rotationalSpeed};
+	
+	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
+	
+	var typeVal = Math.random();
+	var typeName;
+	if (waterLevel > 0.25){
+		typeName = "Water world";
+	} else {
+		typeName = "Earth-like planet";
+	}
+	if (typeVal > 0.9){
+		typeName += " with water based life";
+	}
+	
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed};
+	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">&nbsp;' + typeName + '</p>');
 	
 	planet.add(sphere);
 	
@@ -63,10 +80,24 @@ function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation,
 	
 	var planet = new THREE.Mesh();
 	
-	var sphere = createSphereRockyBody();
+	var bodyType;
+	var bodyColor;
+	if (Math.random() < 0.3){
+		bodyType = "Icy Body";
+		bodyColor = icyBodyColors[randomInt(2)];
+	} else {
+		bodyType = "Rocky Body";
+		bodyColor = rockyBodyColors[randomInt(5)];
+	}
+	
+	var sphere = createSphereRockyBody(bodyColor);
 	sphere.scale.set(radius * 2, radius * 2, radius * 2);
 	sphere.name = "NonStellar";
-	sphere.UserData = {'type': 'Rocky Body', 'mass': 0.3, 'radius': radius, 'rotationalSpeed': rotationalSpeed};//Siia erinevad tyybid icy/rocky/metal etc. icy jaoks vist läheb teistsugust shaderit vaja, need suht siledad
+	
+	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
+	
+	sphere.UserData = {'type': bodyType, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed};//Siia erinevad tyybid icy/rocky/metal etc. icy jaoks vist läheb teistsugust shaderit vaja, need suht siledad
+	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">&nbsp;&nbsp;' + bodyType + '</p>');
 	
 	planet.add(sphere);
 	
@@ -109,15 +140,17 @@ function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotati
 	var scale = getStellarBodyRadius(mass);
 	sphere.scale.set(scale*2*solarMultiplier, scale*2*solarMultiplier, scale*2*solarMultiplier);
 	sphere.name = "Star";
-	sphere.UserData = {'type': spectralClass + '-Class Star', 'mass': mass, 'radius': scale, 'rotationalSpeed': rotationalSpeed};
+	sphere.UserData = {'type': spectralClass + '-Class Star', 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(scale), 'rotationalSpeed': rotationalSpeed};
 	
 	planet.add(sphere);
-
+	
+	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + spectralClass + '-Class Star</p>');
+	
 	var glowMaterial = new THREE.SpriteMaterial( { map: glowTexture, color: getStellarBodyColors(spectralClass)[1], transparent: false, blending: THREE.AdditiveBlending } );
-    
-    var sprite = new THREE.Sprite( glowMaterial );
-    sprite.scale.set(scale*7*solarMultiplier, scale*7*solarMultiplier, 1.0);
-    planet.add(sprite);
+	
+	var sprite = new THREE.Sprite( glowMaterial );
+	sprite.scale.set(scale*7*solarMultiplier, scale*7*solarMultiplier, 1.0);
+	planet.add(sprite);
 	
 	pivot.position.set(getScaledDistance(orbit), 0, 0);
 	pivot.add(planet);

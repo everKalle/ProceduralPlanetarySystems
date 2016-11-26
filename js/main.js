@@ -130,6 +130,12 @@ function onLoad() {
 }
 
 
+function focusPlanet(planetID){
+    var planet = scene.getObjectById( planetID, true );
+    planet.parent.add(camera);
+    camera.lookAt(planet.position);
+}
+
 /**
  * Changes the orbit scales
  */

@@ -13,3 +13,8 @@ var solarRadius = 695700;								// Sun radius in kilometers
  */
 var solarMultiplier = solarRadius / earthRadius;
 var distanceMultiplier = 1/earthRadius;
+
+var waterColors = [0x5E75BF, 0x314994, 0x3d4b78, 0x38415c];
+var rockyBodyColors = [0x494949, 0x675e4d, 0x968667, 0xc1bd9b, 0x58432e, 0x9c7853];
+var icyBodyColors = [0xaec2cc, 0xdbefed, 0xc0d2dd];
+var terrainColors = [[0x5c3d1e,0x365a28,0x447231], [0x213c2a,0x213c2a,0x257826], [0x3e3e3b,0x676557,0x798362]];
