@@ -12,7 +12,7 @@ var hoverables;		// useless vist
 
 var distanceScaleMode = "lin";
 var orbitScale = 1;	// How many times smaller are orbits compared to their real value.
-var speedScale = 100000;	// How much faster does time move.
+var speedScale = 1;	// How much faster does time move.
 
 
 var raycaster = new THREE.Raycaster();	// Mouseover stuff.
@@ -27,6 +27,9 @@ var planetFragmentShader;
 var starFragmentShader;
 var rockybodyFragmentShader;
 
+
+var textureLoader;
+var glowTexture;
 
 
 function onLoad() { 
@@ -47,7 +50,7 @@ function onLoad() {
 	
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000000000 );
 	//camera2 = new THREE.OrthographicCamera(width / - 2, width / 2, height / 2, height / - 2, -1000000000, 1000000000); //Mitte eemaldada hetkel, see kaugete planeetide billboardide kuvamise testiks hetkel (tho praegu ei tööta väga)
-	camera.position.set(10,30,1000);
+	camera.position.set(10,30,10000);
 	camera.up = new THREE.Vector3(0,1,0);
 	camera.lookAt(new THREE.Vector3(0,0,0));
 	
@@ -62,25 +65,36 @@ function onLoad() {
 	mainPivot.position.set(0.0, 0.0, 0.0);
 	scene.add(mainPivot);
 	
-	/*
-	 * This part of the code is temporary, just used to create Sol for now
-	 */
+	textureLoader = new THREE.TextureLoader();
+    glowTexture = textureLoader.load("images/glow.png");
+    
+    /*
+     * Very basic procedural generation
+     */
+    
+    //http://stackoverflow.com/questions/16110758/generate-random-number-with-a-non-uniform-distribution
+    unif = Math.random();
+    beta = Math.pow(Math.sin(unif*Math.PI/2),10);
+    beta_left = (beta < 0.5) ? 2*beta : 2*(1-beta);
+    star = addStar(mainPivot, Math.max(beta_left * 20.0, 0.02), 0, getOrbitalPeriod(earthMass, 5791000), 0, 400);
+    var i = 0;
+    var numPlanets = Math.floor(Math.random() * 10);
+    var distance = 50820000 + 10820000 * Math.random();
+    for(i = 0; i < numPlanets; i++){
+        planet = addPlanet(mainPivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass, distance), 3.14 * Math.random(), 50 + Math.random() * 100);
+        var j = 0;
+        var numMoons = Math.floor(Math.random() * 5);
+        moonDistance = 165000 + Math.random() * 165000
+        for(j = 0; j < numMoons; j++){
+            moon = addRockyBody(planet, 1 * Math.random(), Math.max(moonDistance * distanceMultiplier, 1.0), getOrbitalPeriod(earthMass, moonDistance), 3.14 * Math.random(), Math.random() * 30 + 30);
+            moonDistance += 16500 + Math.random() * 265000;
+        }
+        distance += 5082000 + 20082000 * Math.random();
+    }
 	 
 	 
 	 /* TODO : siit peaks sellest distanceMultiplier-iga korrutamisest lahti saama, mingi add???Body funktsioonis tegema korrutamise tegelt.
 	 Seal peab vaatama tho et igalpool oleks läbi korrutatud ikka (st et userdatadesse ja igale poole saaks juba distanceMultiplier-ga läbi korrutatud kaugus) */
-	star = addStar(mainPivot, 1, 0.0, 0, 0, 400);
-	mercury = addRockyBody(mainPivot, 0.1, 57910000 * distanceMultiplier, getOrbitalPeriod(solarMass, 57910000), toRad(173), 80);
-	venus = addRockyBody(mainPivot, 0.815, 108200000 * distanceMultiplier, getOrbitalPeriod(solarMass, 108200000), toRad(173), 80);
-	earth = addPlanet(mainPivot, 1, 150000000 * distanceMultiplier, getOrbitalPeriod(solarMass, 150000000), toRad(123), 80);
-	moon = addRockyBody(earth, 0.3, Math.max(365000 * distanceMultiplier, 1.0), getOrbitalPeriod(earthMass, 365000), toRad(33), 30);
-	mars = addRockyBody(mainPivot, 0.53, 227900000 * distanceMultiplier, getOrbitalPeriod(solarMass, 227900000), toRad(123), 80);
-	phobos = addRockyBody(mars, 0.07, Math.max(6000 * distanceMultiplier, 0.7), getOrbitalPeriod(0.107 * earthMass, 6000), toRad(22), 80);
-	deimos = addRockyBody(mars, 0.02, Math.max(23460 * distanceMultiplier, 1.0), getOrbitalPeriod(0.107 * earthMass, 23460), toRad(112), 80);
-	jupiter = addRockyBody(mainPivot, 11.5, 778500000 * distanceMultiplier, getOrbitalPeriod(solarMass, 778500000), toRad(33), 80);
-	saturn = addRockyBody(mainPivot, 9.6, 1429000000 * distanceMultiplier, getOrbitalPeriod(solarMass, 1429000000), toRad(13), 80);
-	ur_anus = addRockyBody(mainPivot, 4.1, 2871000000 * distanceMultiplier, getOrbitalPeriod(solarMass, 2871000000), toRad(234), 80);
-	neptune = addRockyBody(mainPivot, 4.0, 4498000000 * distanceMultiplier, getOrbitalPeriod(solarMass, 4498000000), toRad(234), 80);
 	
 	focusedObject = mainPivot;
 	
@@ -155,8 +169,8 @@ function draw() {
 				focusedObject = object;
 			}
 		} else if (object.name == "Star"){
-			object.material.uniforms.starAnimation.value = Math.cos(toRad((millis() / 50) % 720));
-			object.material.uniforms.starAnimation2.value = Math.sin(toRad((millis() / 50) % 720));
+			object.material.uniforms.starAnimation.value = Math.cos(toRad((millis() / 500) % 720));
+			object.material.uniforms.starAnimation2.value = Math.sin(toRad((millis() / 500) % 720));
 			
 			var data = object.UserData;
 			

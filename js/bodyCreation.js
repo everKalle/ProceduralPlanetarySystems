@@ -112,6 +112,12 @@ function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotati
 	sphere.UserData = {'type': spectralClass + '-Class Star', 'mass': mass, 'radius': scale, 'rotationalSpeed': rotationalSpeed};
 	
 	planet.add(sphere);
+
+	var glowMaterial = new THREE.SpriteMaterial( { map: glowTexture, color: getStellarBodyColors(spectralClass)[1], transparent: false, blending: THREE.AdditiveBlending } );
+    
+    var sprite = new THREE.Sprite( glowMaterial );
+    sprite.scale.set(scale*7*solarMultiplier, scale*7*solarMultiplier, 1.0);
+    planet.add(sprite);
 	
 	pivot.position.set(getScaledDistance(orbit), 0, 0);
 	pivot.add(planet);
