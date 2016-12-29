@@ -5,6 +5,7 @@
 		<script type="text/javascript" src="js/three.r81-tweaked.js"></script>
 		<script type="text/javascript" src="js/OrbitControls.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script type="text/javascript" src="js/rangeslider.min.js"></script>
 		<script type="text/javascript" src="js/constants.js"></script>
 		<script type="text/javascript" src="js/helperFunctions.js"></script>
 		<script type="text/javascript" src="js/bodyHelperFunctions.js"></script>
@@ -168,11 +169,13 @@
 			void main() {
 				
 				float f = planetSurfaceNoise(interpolatedLocalPosition);
+				//float f = planetSurfaceNoise(vec3(interpolatedLocalPosition.x / 10.0, interpolatedLocalPosition.y, interpolatedLocalPosition.z / 10.0));
 				
 				float f2 = 0.0;
 				f2 += 1.0 * noise(3.0 * interpolatedLocalPosition + vec3(3,3,3));
 				f2 += 0.5 * noise(15.0 * interpolatedLocalPosition + vec3(3,3,3));
 				f2 += 0.5 * noise(33.0 * interpolatedLocalPosition + vec3(3,3,3));
+				//f2 = pow(f2, 3.);
 				
 				vec2 gradient = vec2((planetSurfaceNoise(interpolatedLocalPosition - vec3(0.01, 0.0, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.01, 0.0, 0.0))),
 									(planetSurfaceNoise(interpolatedLocalPosition - vec3(0.0, 0.01, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.00, 0.01, 0.0))));
@@ -273,21 +276,21 @@
 			}
 		</script>
 		<style>
-			p{
-                color: #fff;
-                border: none
-                background: none;
-            }
-            p:hover{
-                background-color: #fff;
-                color: #000;
-                cursor: pointer;
-            }
 			body {
 				font-family: Monospace;
 				background-color: #000;
 				margin: 0px;
 				overflow: hidden;
+			}
+			p{
+				color: #fff;
+				border: none
+				background: none;
+			}
+			p:hover{
+				background-color: #fff;
+				color: #000;
+				cursor: pointer;
 			}
 		</style>
 	</head>
@@ -299,15 +302,14 @@
 			<p id="body-radius"></p>
 		</div>
 		<div style="position: absolute; background-color: rgba(0,0,0,0.5); color: white; left: 20px; bottom: 20px; padding-left: 10px; padding-right: 10px;">
-        <p id = "showhideList" onclick="showhidePlanetList()">SHOW PLANET LIST</p>
-        <div id="planetContainer" style="display: none">
-            -----------------
-        </div>
-        </div>
+		<p id = "showhideList" onclick="showhidePlanetList()">SHOW PLANET LIST</p>
+		<div id="planetContainer" style="display: none">
+			-----------------
+		</div>
+		</div>
 		<div id="tempContainer" style="position: absolute; background-color: rgba(0,0,0,0.5); color: white; right: 20px; top: 20px; padding-left: 10px; padding-right: 10px;">
-			<p id="body-radius">//TODO: Hiljem võiks siia panna nupud/sliderid</p>
-			<p id="body-class">A/D - change orbit scale</p>
-			<p id="body-mass">Q/E - change speedscale</p>
+			<p id="body-class">Orbit Scale: <input type="range" min="1" max="10" step="1" value="1" id="orbitScaleSlider"> <span id="orbitScaleText">1/1</span></p>
+			<p id="body-class">Speed scale: <input type="range" min="1" max="50000" step="1" value="1" id="speedScaleSlider"> <span id="speedScaleText">1x</span></p>
 			<p id="body-mass">LMB - rotate view</p>
 			<p id="body-mass">RMB/Arrow Keys - pan view</p>
 			<p id="body-mass">Space - make camera track the active body<br>
@@ -315,17 +317,18 @@
 			</p>
 		</div>
 		<script>
-            var shown = false;
-            function showhidePlanetList(){
-                if (shown){
-                    $("#showhideList").text("SHOW BODY LIST");
-                    shown = false;
-                } else {
-                    $("#showhideList").text("HIDE BODY LIST");
-                    shown = true;
-                }
-                $("#planetContainer").slideToggle("slow");
-            }
-        </script>
+			var shown = false;
+			function showhidePlanetList(){
+				if (shown){
+					$("#showhideList").text("SHOW BODY LIST");
+					shown = false;
+				} else {
+					$("#showhideList").text("HIDE BODY LIST");
+					shown = true;
+				}
+				$("#planetContainer").slideToggle("slow");
+			}
+			$('input[type="range"]').rangeslider();
+		</script>
 	</body>
 </html>

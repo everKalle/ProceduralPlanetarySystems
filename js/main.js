@@ -7,6 +7,7 @@ var star;
 var moon;
 
 var focusedObject;	// What object to follow when <SPACE> is pressed
+var controls;
 
 var hoverables;		// useless vist
 
@@ -17,6 +18,7 @@ var speedScale = 1;	// How much faster does time move.
 
 var raycaster = new THREE.Raycaster();	// Mouseover stuff.
 var mouse = new THREE.Vector2(0.0);
+var prevTime;
 
 var lightPosition;		// Where's the light-source
 
@@ -27,10 +29,10 @@ var planetFragmentShader;
 var starFragmentShader;
 var rockybodyFragmentShader;
 
-
 var textureLoader;
 var glowTexture;
 
+var tempGlow;
 
 function onLoad() { 
 	var canvasContainer = document.getElementById('canvasContainer'); 
@@ -49,12 +51,12 @@ function onLoad() {
 	scene2 = new THREE.Scene();
 	
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000000000 );
-	//camera2 = new THREE.OrthographicCamera(width / - 2, width / 2, height / 2, height / - 2, -1000000000, 1000000000); //Mitte eemaldada hetkel, see kaugete planeetide billboardide kuvamise testiks hetkel (tho praegu ei tööta väga)
+	//camera2 = new THREE.OrthographicCamera(-width, width, 64, -64, -1000000000, 1000000000); //Mitte eemaldada hetkel, see kaugete planeetide billboardide kuvamise testiks hetkel (tho praegu ei tööta väga)
 	camera.position.set(10,30,10000);
 	camera.up = new THREE.Vector3(0,1,0);
 	camera.lookAt(new THREE.Vector3(0,0,0));
 	
-	/*camera2.position.set(10,30,1000);
+	/*camera2.position.set(0,0,10000);
 	camera2.up = new THREE.Vector3(0,1,0);
 	camera2.lookAt(new THREE.Vector3(0,0,0));*/
 	scene.add(camera);
@@ -64,37 +66,44 @@ function onLoad() {
 	mainPivot = new THREE.Object3D();
 	mainPivot.position.set(0.0, 0.0, 0.0);
 	scene.add(mainPivot);
-	
-	textureLoader = new THREE.TextureLoader();
-    glowTexture = textureLoader.load("images/glow.png");
-    
-    /*
-     * Very basic procedural generation
-     */
-    
-    //http://stackoverflow.com/questions/16110758/generate-random-number-with-a-non-uniform-distribution
-    unif = Math.random();
-    beta = Math.pow(Math.sin(unif*Math.PI/2),10);
-    beta_left = (beta < 0.5) ? 2*beta : 2*(1-beta);
-    star = addStar(mainPivot, Math.max(beta_left * 20.0, 0.02), 0, getOrbitalPeriod(earthMass, 5791000), 0, 400);
-    var i = 0;
-    var numPlanets = Math.floor(Math.random() * 10);
-    var distance = 50820000 + 10820000 * Math.random();
-    for(i = 0; i < numPlanets; i++){
-        planet = addPlanet(mainPivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass, distance), 3.14 * Math.random(), 50 + Math.random() * 100);
-        var j = 0;
-        var numMoons = Math.floor(Math.random() * 5);
-        moonDistance = 165000 + Math.random() * 165000
-        for(j = 0; j < numMoons; j++){
-            moon = addRockyBody(planet, 1 * Math.random(), Math.max(moonDistance * distanceMultiplier, 1.0), getOrbitalPeriod(earthMass, moonDistance), 3.14 * Math.random(), Math.random() * 30 + 30);
-            moonDistance += 16500 + Math.random() * 265000;
-        }
-        distance += 5082000 + 20082000 * Math.random();
-    }
 	 
 	 
 	 /* TODO : siit peaks sellest distanceMultiplier-iga korrutamisest lahti saama, mingi add???Body funktsioonis tegema korrutamise tegelt.
 	 Seal peab vaatama tho et igalpool oleks läbi korrutatud ikka (st et userdatadesse ja igale poole saaks juba distanceMultiplier-ga läbi korrutatud kaugus) */
+	
+	textureLoader = new THREE.TextureLoader();
+	glowTexture = textureLoader.load("images/glow.png");
+	
+	/*
+	 * Very basic procedural generation
+	 */
+	
+	//http://stackoverflow.com/questions/16110758/generate-random-number-with-a-non-uniform-distribution
+	unif = Math.random();
+	beta = Math.pow(Math.sin(unif*Math.PI/2),10);
+	beta_left = (beta < 0.5) ? 2*beta : 2*(1-beta);
+	var starMass = Math.max(beta_left * 20.0, 0.02);
+	star = addStar(mainPivot, starMass, 0, getOrbitalPeriod(earthMass, 5791000), 0, 400);
+	var i = 0;
+	var numPlanets = Math.floor(Math.random() * 10);
+	var distance = 50820000 + 10820000 * Math.random();
+	var CHZ_MidPoint = 149597871 * Math.sqrt(starMass);
+	for(i = 0; i < numPlanets; i++){
+		if (distance < CHZ_MidPoint + 39597871 && distance > CHZ_MidPoint - 39597871){
+			planet = addPlanet(mainPivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass, distance), 3.14 * Math.random(), 50 + Math.random() * 100, 1);
+		} else {
+			planet = addRockyBody(mainPivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass, distance), 3.14 * Math.random(), 50 + Math.random() * 100, 1);
+		}
+		var j = 0;
+		var numMoons = Math.floor(Math.random() * 5);
+		moonDistance = 165000 + Math.random() * 165000
+		for(j = 0; j < numMoons; j++){
+			moon = addRockyBody(planet, 1 * Math.random(), Math.max(moonDistance * distanceMultiplier, 1.0), getOrbitalPeriod(earthMass, moonDistance), 3.14 * Math.random(), Math.random() * 30 + 30, 2);
+			moonDistance += 16500 + Math.random() * 265000;
+		}
+		distance += 5082000 + 20082000 * Math.random();
+	}
+	
 	
 	focusedObject = mainPivot;
 	
@@ -105,36 +114,65 @@ function onLoad() {
 		if (event.keyCode == 32) { //<SPACE>
 			if (camera.parent != focusedObject.parent){
 				focusedObject.parent.add(camera);
-				camera.lookAt(focusedObject.worldPosition);
-				// TODO : Make the camera properly focus on the object
+				controls.target = new THREE.Vector3(focusedObject.position.x,focusedObject.position.y,focusedObject.position.z);
+				controls.update();
 			} else {
 				scene.add(camera);
 			}
-		} else if (event.keyCode == 65) { //A
-			orbitScale /= 2;
-			changeOrbitScale();
-		} else if (event.keyCode == 68) { //D
-			orbitScale *= 2;
-			changeOrbitScale();
-		} else if (event.keyCode == 81) { //A
-			speedScale /= 10;
-		} else if (event.keyCode == 69) { //D
-			speedScale *= 10;
 		}
 	}, false);
+	
+	$('#speedScaleSlider').on("change mousemove", function() {
+		$('#speedScaleText').text($('#speedScaleSlider').val() + "x");
+		speedScale = Number($('#speedScaleSlider').val());
+	});
+	
+	$('#orbitScaleSlider').on("change mousemove", function() {
+		$('#orbitScaleText').text("1/" + $('#orbitScaleSlider').val());
+		orbitScale = Number($('#orbitScaleSlider').val());
+		changeOrbitScale();
+	});
 	
 	controls = new THREE.OrbitControls( camera, renderer.domElement );
 	renderer.autoClear = false;
 	
+	prevTime = millis() - 100;
+	
+	/*scene.add( new THREE.AmbientLight( 0xFFFFFF ) );
+	
+	var skyGeo = new THREE.SphereGeometry(100000000, 25, 25); 
+	var texture = textureLoader.load("images/stars.png");
+	var material = new THREE.MeshPhongMaterial({ 
+		map: texture
+		
+	});
+	var sky = new THREE.Mesh(skyGeo, material);
+    sky.material.side = THREE.BackSide;
+    scene.add(sky);*/
+	
 	draw();
 }
 
-
 function focusPlanet(planetID){
-    var planet = scene.getObjectById( planetID, true );
-    planet.parent.add(camera);
-    camera.lookAt(planet.position);
+	var planet = scene.getObjectById( planetID, true );
+	console.log(planetID);
+	planet.parent.add(camera);
+	controls.target = new THREE.Vector3(planet.position.x,planet.position.y,planet.position.z);
+	controls.update();
+	console.log(planet);
+	var data = planet.children[0].UserData;
+	if (planet.children[0].name == "NonStellar"){
+		$("#body-class").html(data['type']);
+		$("#body-mass").html('Mass: ' + data['mass'] + ' Earth Masses');
+		$("#body-radius").html('Radius: ' + data['radius'] + ' Earth Radii');
+	} else if (planet.children[0].name == "Star") {
+		$("#body-class").html(data['type']);
+		$("#body-mass").html('Mass: ' + data['mass'] + ' Solar Masses');
+		$("#body-radius").html('Radius: ' + data['radius'] + ' Solar Radii');
+	}
+	focusedObject = planet;
 }
+
 
 /**
  * Changes the orbit scales
@@ -175,8 +213,8 @@ function draw() {
 				focusedObject = object;
 			}
 		} else if (object.name == "Star"){
-			object.material.uniforms.starAnimation.value = Math.cos(toRad((millis() / 500) % 720));
-			object.material.uniforms.starAnimation2.value = Math.sin(toRad((millis() / 500) % 720));
+			object.material.uniforms.starAnimation.value = Math.cos(toRad((millis() * (1 + speedScale / 5000) / 500) % 360));
+			object.material.uniforms.starAnimation2.value = Math.sin(toRad((millis() * (1 + speedScale / 5000) / 500) % 360));
 			
 			var data = object.UserData;
 			
@@ -191,18 +229,31 @@ function draw() {
 		} else if (object.name == "Orbit"){
 			var data = object.UserData;
 			if (data['speed'] > 0){
-				object.rotation.set(0, data['baseRotation'] + toRad((millis() / (data['speed']  / speedScale)) % 360), 0);
+				var newRotation = (data['rotation'] + (360 * deltaTime() * speedScale / (1000 * data['speed']))) % 360
+				object.UserData['rotation'] = newRotation;
+				object.rotation.set(0, newRotation, 0);
 			}
 		}
 	});
 	
 	/*camera2.position.set(camera.position.x, camera.position.y, camera.position.z);
 	camera2.rotation.set(camera.rotation.x, camera.rotation.y, camera.rotation.z);*/
+	/*var sc = Math.sqrt(Math.pow(tempGlow.position.x - camera.position.x, 2) + Math.pow(tempGlow.position.y - camera.position.y, 2) + Math.pow(tempGlow.position.z - camera.position.z, 2));
+	tempGlow.scale.set(sc * 0.005, sc * 0.005, 1);*/
+	
+	prevTime = millis();
 	
 	renderer.clear();
+	
+	//renderer.setViewport( 0, 0, width, height );
 	renderer.render(scene, camera);
-	//renderer.render(scene, camera2);
+	/*renderer.setViewport( 0, height - 128, width, 128 );
+	renderer.render(scene, camera2);*/
 	//renderer.clearDepth();
+}
+
+function deltaTime(){
+	return millis() - prevTime;
 }
 
 /**

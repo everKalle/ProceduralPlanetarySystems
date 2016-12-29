@@ -11,14 +11,14 @@
  *
  * @return - Pivot of the planet
  */
-function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
+function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
 	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
 	pivot.UserData = {'baseOrbit' : orbit };
 	
 	var orbitPivot = new THREE.Object3D();		// Pivot controlling orbiting of this planet
 	orbitPivot.name = "Orbit";
-	orbitPivot.UserData = {'speed' : orbitSpeed, 'baseRotation' : baseOrbitRotation};
+	orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseOrbitRotation};
 	
 	var planet = new THREE.Mesh();
 	
@@ -42,7 +42,7 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 	}
 	
 	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed};
-	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">&nbsp;' + typeName + '</p>');
+	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 	
 	planet.add(sphere);
 	
@@ -69,14 +69,14 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
  *
  * @return - Pivot of the body
  */
-function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed) {
+function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth) {
 	var pivot = new THREE.Object3D();			//Body's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
 	pivot.UserData = {'baseOrbit' : orbit };
 	
 	var orbitPivot = new THREE.Object3D();		// Pivot controlling orbiting of this body
 	orbitPivot.name = "Orbit";
-	orbitPivot.UserData = {'speed' : orbitSpeed, 'baseRotation' : baseOrbitRotation};
+	orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseOrbitRotation};
 	
 	var planet = new THREE.Mesh();
 	
@@ -97,7 +97,7 @@ function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation,
 	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
 	
 	sphere.UserData = {'type': bodyType, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed};//Siia erinevad tyybid icy/rocky/metal etc. icy jaoks vist läheb teistsugust shaderit vaja, need suht siledad
-	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">&nbsp;&nbsp;' + bodyType + '</p>');
+	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + bodyType + '</p>');
 	
 	planet.add(sphere);
 	
@@ -131,7 +131,7 @@ function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotati
 	
 	var orbitPivot = new THREE.Object3D();	// Pivot controlling orbiting of this star
 	orbitPivot.name = "Orbit";
-	orbitPivot.UserData = {'speed' : orbitSpeed, 'baseRotation' : baseOrbitRotation};
+	orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseOrbitRotation};
 	
 	var spectralClass = getSpectralClass(mass);	//Get the star's spectral class based on it's mass
 	var planet = new THREE.Mesh();
