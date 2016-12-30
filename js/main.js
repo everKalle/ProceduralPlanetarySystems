@@ -23,6 +23,7 @@ var prevTime;
 var lightPosition;		// Where's the light-source
 
 var mainPivot;			// All stellar and non-stellar bodies are it's children, sort of the central point
+var pivots = [];
 
 var vertexShader;				// Shaders
 var planetFragmentShader;		
@@ -61,11 +62,12 @@ function onLoad() {
 	camera2.lookAt(new THREE.Vector3(0,0,0));*/
 	scene.add(camera);
 	//scene.add(camera2);
-	
-	lightPosition = new THREE.Vector3(0, 0, 0);
 	mainPivot = new THREE.Object3D();
 	mainPivot.position.set(0.0, 0.0, 0.0);
 	scene.add(mainPivot);
+
+	
+	lightPosition = new THREE.Vector3(0, 0, 0);
 	 
 	 
 	 /* TODO : siit peaks sellest distanceMultiplier-iga korrutamisest lahti saama, mingi add???Body funktsioonis tegema korrutamise tegelt.
@@ -79,33 +81,9 @@ function onLoad() {
 	 */
 	
 	//http://stackoverflow.com/questions/16110758/generate-random-number-with-a-non-uniform-distribution
-	unif = Math.random();
-	beta = Math.pow(Math.sin(unif*Math.PI/2),10);
-	beta_left = (beta < 0.5) ? 2*beta : 2*(1-beta);
-	var starMass = Math.max(beta_left * 20.0, 0.02);
-	star = addStar(mainPivot, starMass, 0, getOrbitalPeriod(earthMass, 5791000), 0, 400);
-	var i = 0;
-	var numPlanets = Math.floor(Math.random() * 10);
-	var distance = 50820000 + 10820000 * Math.random();
-	var CHZ_MidPoint = 149597871 * Math.sqrt(starMass);
-	for(i = 0; i < numPlanets; i++){
-		if (distance < CHZ_MidPoint + 39597871 && distance > CHZ_MidPoint - 39597871){
-			planet = addPlanet(mainPivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass, distance), 3.14 * Math.random(), 50 + Math.random() * 100, 1);
-		} else {
-			planet = addRockyBody(mainPivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass, distance), 3.14 * Math.random(), 50 + Math.random() * 100, 1);
-		}
-		var j = 0;
-		var numMoons = Math.floor(Math.random() * 5);
-		moonDistance = 165000 + Math.random() * 165000
-		for(j = 0; j < numMoons; j++){
-			moon = addRockyBody(planet, 1 * Math.random(), Math.max(moonDistance * distanceMultiplier, 1.0), getOrbitalPeriod(earthMass, moonDistance), 3.14 * Math.random(), Math.random() * 30 + 30, 2);
-			moonDistance += 16500 + Math.random() * 265000;
-		}
-		distance += 5082000 + 20082000 * Math.random();
-	}
 	
+	procedularGeneration();
 	
-	focusedObject = mainPivot;
 	
 	window.addEventListener( 'mousemove', onMouseMove, false );
 	window.addEventListener( 'resize', onWindowResize, false );
@@ -151,6 +129,42 @@ function onLoad() {
     scene.add(sky);*/
 	
 	draw();
+}
+
+function procedularGeneration() {
+
+	scene.remove(mainPivot);
+	$("#planetContainer").empty();
+
+	mainPivot = new THREE.Object3D();
+	mainPivot.position.set(0.0, 0.0, 0.0);
+	scene.add(mainPivot);
+
+	unif = Math.random();
+	beta = Math.pow(Math.sin(unif*Math.PI/2),10);
+	beta_left = (beta < 0.5) ? 2*beta : 2*(1-beta);
+	var starMass = Math.max(beta_left * 20.0, 0.02);
+	star = addStar(mainPivot, starMass, 0, getOrbitalPeriod(earthMass, 5791000), 0, 400);
+	var i = 0;
+	var numPlanets = Math.floor(Math.random() * 10);
+	var distance = 50820000 + 10820000 * Math.random();
+	var CHZ_MidPoint = 149597871 * Math.sqrt(starMass);
+	for(i = 0; i < numPlanets; i++){
+		if (distance < CHZ_MidPoint + 39597871 && distance > CHZ_MidPoint - 39597871){
+			planet = addPlanet(mainPivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass, distance), 3.14 * Math.random(), 50 + Math.random() * 100, 1);
+		} else {
+			planet = addRockyBody(mainPivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass, distance), 3.14 * Math.random(), 50 + Math.random() * 100, 1);
+		}
+		var j = 0;
+		var numMoons = Math.floor(Math.random() * 5);
+		moonDistance = 165000 + Math.random() * 165000
+		for(j = 0; j < numMoons; j++){
+			moon = addRockyBody(planet, 1 * Math.random(), Math.max(moonDistance * distanceMultiplier, 1.0), getOrbitalPeriod(earthMass, moonDistance), 3.14 * Math.random(), Math.random() * 30 + 30, 2);
+			moonDistance += 16500 + Math.random() * 265000;
+		}
+		distance += 5082000 + 20082000 * Math.random();
+	}
+	focusedObject = mainPivot;
 }
 
 function focusPlanet(planetID){
