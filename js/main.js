@@ -134,7 +134,7 @@ function onLoad() {
 function procedularGeneration() {
 
 	scene.remove(mainPivot);
-	$("#planetContainer").empty();
+	$("#planetContainer").empty()
 
 	mainPivot = new THREE.Object3D();
 	mainPivot.position.set(0.0, 0.0, 0.0);
@@ -165,6 +165,7 @@ function procedularGeneration() {
 		distance += 5082000 + 20082000 * Math.random();
 	}
 	focusedObject = mainPivot;
+	changeOrbitScale();
 }
 
 function focusPlanet(planetID){
@@ -279,7 +280,7 @@ function deltaTime(){
 function createCircle(radius){
 	segments = 64,
 	material = new THREE.LineBasicMaterial( { color: 0x33383e } ),
-	geometry = new THREE.CircleGeometry( getScaledDistance(radius), segments );
+	geometry = new THREE.CircleGeometry( radius, segments );
 	
 	geometry.vertices.shift();
 	
@@ -287,8 +288,6 @@ function createCircle(radius){
 	circle.position.set(0.0, 0.0, 0.0);
 	circle.rotation.set(toRad(90.0), 0.0, 0.0);
 	circle.name = "OrbitLine";
-	var scale = getScaledDistance(0.5);
-	circle.scale.set(scale*2,scale*2,scale*2);
 
 	return circle;
 }

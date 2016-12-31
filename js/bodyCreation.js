@@ -46,7 +46,7 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 	
 	planet.add(sphere);
 	
-	pivot.position.set(getScaledDistance(orbit), 0, 0);
+	pivot.position.set(orbit, 0, 0);
 	pivot.add(planet);
 	
 	orbitPivot.add(pivot);
@@ -101,7 +101,7 @@ function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation,
 	
 	planet.add(sphere);
 	
-	pivot.position.set(getScaledDistance(orbit), 0, 0);
+	pivot.position.set(orbit, 0, 0);
 	pivot.add(planet);
 	
 	orbitPivot.add(pivot);
@@ -152,7 +152,7 @@ function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotati
 	sprite.scale.set(scale*7*solarMultiplier, scale*7*solarMultiplier, 1.0);
 	planet.add(sprite);
 	
-	pivot.position.set(getScaledDistance(orbit), 0, 0);
+	pivot.position.set(orbit, 0, 0);
 	pivot.add(planet);
 	
 	orbitPivot.add(pivot);
@@ -178,7 +178,7 @@ function addEmptyBody(parentPivot, orbit){	//TODO: üsna lõpetamata see, vaja a
 	var orbitPivot = new THREE.Object3D();
 	orbitPivot.name = "Orbit";
 	orbitPivot.UserData = {'speed' : 300, 'baseRotation' : 0};
-	pivot.position.set(getScaledDistance(orbit), 0, 0);
+	pivot.position.set(orbit, 0, 0);
 	orbitPivot.add(pivot);
 	parentPivot.add(orbitPivot);
 	
