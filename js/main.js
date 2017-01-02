@@ -171,9 +171,9 @@ function generateStar(pivot, orbit, orbitPeriod, baseRotation, depth){
 			binary = addEmptyBody(pivot, orbit, orbitPeriod, baseRotation, true);
 			
 			star1 = generateStar(binary, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), 0, depth-1);//addStar(binary, starMass1, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), 0, 400);
+			generatePlanets(star1, starMass1, 10, 10082000 + 5820000 * Math.random(), 5082000, 10082000);
 			star2 = generateStar(binary, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), toRad(180), depth-1);//addStar(binary, starMass2, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), toRad(180), 400);
 			
-			generatePlanets(star1, starMass1, 10, 10082000 + 5820000 * Math.random(), 5082000, 10082000);
 			generatePlanets(star2, starMass2, 10, 10082000 + 5820000 * Math.random(), 5082000, 10082000);
 		}
 		return binary;
@@ -206,13 +206,13 @@ function generatePlanets(pivot, baseMass, maxCount, baseDistance, distanceIncrea
 				planet1 = addRockyBody(binary, planetMass1, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), 0, 50 + Math.random() * 100, 1);
 			}
 			
+			generateMoons(planet1);
+			
 			if (distance < CHZ_MidPoint + 39597871 && distance > CHZ_MidPoint - 39597871){
 				planet2 = addPlanet(binary, planetMass2, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), toRad(180), 50 + Math.random() * 100, 1);
 			} else {
 				planet2 = addRockyBody(binary, planetMass2, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), toRad(180), 50 + Math.random() * 100, 1);
 			}
-			
-			generateMoons(planet1);
 			generateMoons(planet2);
 		}
 		distance += distanceIncreaseBase + distanceIncreaseRandom * Math.random();
