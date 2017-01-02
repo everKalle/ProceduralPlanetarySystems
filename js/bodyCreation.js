@@ -11,10 +11,10 @@
  *
  * @return - Pivot of the planet
  */
-function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
+function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
 	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
-	pivot.UserData = {'baseOrbit' : orbit };
+	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit};
 	
 	var orbitPivot = new THREE.Object3D();		// Pivot controlling orbiting of this planet
 	orbitPivot.name = "Orbit";
@@ -52,7 +52,7 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 	orbitPivot.add(pivot);
 	parentPivot.add(orbitPivot);
 
-	parentPivot.add( createCircle(orbit) );
+	parentPivot.add( createCircle(orbit, minimalOrbit/orbit) );
 	
 	return pivot;
 }
@@ -69,10 +69,10 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
  *
  * @return - Pivot of the body
  */
-function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth) {
+function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit) {
 	var pivot = new THREE.Object3D();			//Body's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
-	pivot.UserData = {'baseOrbit' : orbit };
+	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit };
 	
 	var orbitPivot = new THREE.Object3D();		// Pivot controlling orbiting of this body
 	orbitPivot.name = "Orbit";
@@ -107,7 +107,7 @@ function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation,
 	orbitPivot.add(pivot);
 	parentPivot.add(orbitPivot);
 	
-	parentPivot.add( createCircle(orbit) );
+	parentPivot.add( createCircle(orbit, minimalOrbit/orbit) );
 	
 	return pivot;
 }
@@ -124,10 +124,10 @@ function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation,
  *
  * @return - Pivot of the planet
  */
-function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed) {
+function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, minimalOrbit) {
 	var pivot = new THREE.Object3D();		//Star's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
-	pivot.UserData = {'baseOrbit' : orbit };
+	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit };
 	
 	var orbitPivot = new THREE.Object3D();	// Pivot controlling orbiting of this star
 	orbitPivot.name = "Orbit";
@@ -160,7 +160,7 @@ function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotati
 	
 	// If the orbit is 0, there is no need to create the orbit line
 	if (orbit>0){
-		parentPivot.add( createCircle(orbit) );
+		parentPivot.add( createCircle(orbit, minimalOrbit/orbit) );
 	}
 	
 	return pivot;
@@ -172,10 +172,10 @@ function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotati
  *
  * //TODO: arguments
  */
-function addEmptyBody(parentPivot, orbit, orbitSpeed, baseRotation, drawOrbit){	//TODO: üsna lõpetamata see, vaja argumendid: orbitSpeed, baseOrbitRotation, rotationalSpeed nagu teistel.
+function addEmptyBody(parentPivot, orbit, orbitSpeed, baseRotation, drawOrbit, minimalOrbit){	//TODO: üsna lõpetamata see, vaja argumendid: orbitSpeed, baseOrbitRotation, rotationalSpeed nagu teistel.
 	var pivot = new THREE.Object3D();
 	pivot.name = "OrbitingBodyPivot";
-	pivot.UserData = {'baseOrbit' : orbit };
+	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit };
 	var orbitPivot = new THREE.Object3D();
 	orbitPivot.name = "Orbit";
 	orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseRotation};
@@ -184,7 +184,7 @@ function addEmptyBody(parentPivot, orbit, orbitSpeed, baseRotation, drawOrbit){	
 	parentPivot.add(orbitPivot);
 	
 	if (orbit>0 && drawOrbit){
-		parentPivot.add( createCircle(orbit) );
+		parentPivot.add( createCircle(orbit, minimalOrbit/orbit) );
 	}
 	
 	return pivot;

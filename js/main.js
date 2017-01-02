@@ -76,12 +76,6 @@ function onLoad() {
 	textureLoader = new THREE.TextureLoader();
 	glowTexture = textureLoader.load("images/glow.png");
 	
-	/*
-	 * Very basic procedural generation
-	 */
-	
-	
-	
 	procedularGeneration();
 	
 	
@@ -139,92 +133,102 @@ function procedularGeneration() {
 	mainPivot = new THREE.Object3D();
 	mainPivot.position.set(0.0, 0.0, 0.0);
 	scene.add(mainPivot);
-	generateStar(mainPivot, 0, 0, 0, 2);
+	generateStar(mainPivot, 0, 0, 0, 2, 0);
 	focusedObject = mainPivot;
+	console.log(mainPivot);
 	scene.add(camera);
 	changeOrbitScale();
 }
 
-function generateStar(pivot, orbit, orbitPeriod, baseRotation, depth){
+function generateStar(pivot, orbit, orbitPeriod, baseRotation, depth, minimalOrbit){
 	var starMass;
 	if (Math.random() <= 0.8 || depth == 0){
 		starMass = Math.max(betaLeft() * 20.0, 0.02)
-		star = addStar(pivot, starMass, orbit, orbitPeriod, baseRotation, 400);
-		generatePlanets(pivot, starMass, 10, 50082000 + 10820000 * Math.random(), 5082000, 10082000);
+		star = addStar(pivot, starMass, orbit, orbitPeriod, baseRotation, 400, minimalOrbit);
+		generatePlanets(pivot, starMass, 10, 50082000 + 10820000 * Math.random(), 5082000, 10082000, (getStellarBodyRadius(starMass)*solarRadius + 500000) * distanceMultiplier * 2);
 		return star;
 	} else {
 		var starMass1 = Math.max(betaLeft() * 20.0, 0.02);
 		var starMass2 = Math.max(betaLeft() * 20.0, 0.02);
 		starMass = starMass1 + starMass2;
 		var binary;
-		if (Math.random() <= 0.9){
+		if (Math.random() <= 0.6){	//Close orbiting stars
 			var binaryOrbitDistance = (getStellarBodyRadius(starMass1)*solarRadius + getStellarBodyRadius(starMass2)*solarRadius + 508200 + 10820000 * Math.random()) * distanceMultiplier;
 			
-			binary = addEmptyBody(pivot, orbit, orbitPeriod, baseRotation, true);
+			binary = addEmptyBody(pivot, orbit, orbitPeriod, baseRotation, true, minimalOrbit);
 			
-			star1 = addStar(binary, starMass1, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), 0, 400);
-			star2 = addStar(binary, starMass2, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), toRad(180), 400);
-			generatePlanets(pivot, starMass, 10, 50082000 + 5820000 * Math.random(), 5082000, 10082000);
-		} else {
+			var minOrbit = getStellarBodyRadius(starMass1) + getStellarBodyRadius(starMass2) + 50;
+			star1 = addStar(binary, starMass1, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), 0, 400, minOrbit);
+			star2 = addStar(binary, starMass2, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), toRad(180), 400, minOrbit);
+			generatePlanets(pivot, starMass, 10, 50082000 + 5820000 * Math.random(), 5082000, 10082000, minOrbit);
+		} else {	//Far orbiting stars
 			var binaryOrbitDistance = (getStellarBodyRadius(starMass1)*solarRadius + getStellarBodyRadius(starMass2)*solarRadius + 508200000 + 1082000000 * Math.random()) * distanceMultiplier;
 			
-			binary = addEmptyBody(pivot, orbit, orbitPeriod, baseRotation, true);
+			binary = addEmptyBody(pivot, orbit, orbitPeriod, baseRotation, true, minimalOrbit);
 			
-			star1 = generateStar(binary, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), 0, depth-1);//addStar(binary, starMass1, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), 0, 400);
-			generatePlanets(star1, starMass1, 10, 10082000 + 5820000 * Math.random(), 5082000, 10082000);
-			star2 = generateStar(binary, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), toRad(180), depth-1);//addStar(binary, starMass2, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), toRad(180), 400);
+			var minOrbit = (getStellarBodyRadius(starMass1)*solarRadius + getStellarBodyRadius(starMass2)*solarRadius + 500000) * distanceMultiplier;
+			star1 = generateStar(binary, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), 0, depth-1, minOrbit);//addStar(binary, starMass1, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), 0, 400);
+			generatePlanets(star1, starMass1, 10, 10082000 + 5820000 * Math.random(), 5082000, 10082000, (getStellarBodyRadius(starMass1)*solarRadius + 50000) * distanceMultiplier * 2);
+			star2 = generateStar(binary, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), toRad(180), depth-1, minOrbit);//addStar(binary, starMass2, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), toRad(180), 400);
 			
-			generatePlanets(star2, starMass2, 10, 10082000 + 5820000 * Math.random(), 5082000, 10082000);
+			generatePlanets(star2, starMass2, 10, 10082000 + 5820000 * Math.random(), 5082000, 10082000, (getStellarBodyRadius(starMass2)*solarRadius + 50000) * distanceMultiplier * 2);
 		}
 		return binary;
 	}
 }
 
-function generatePlanets(pivot, baseMass, maxCount, baseDistance, distanceIncreaseBase, distanceIncreaseRandom){
+function generatePlanets(pivot, baseMass, maxCount, baseDistance, distanceIncreaseBase, distanceIncreaseRandom, minimalOrbit){
 	var numPlanets = Math.floor(Math.random() * maxCount);
 	var distance = baseDistance;
 	var CHZ_MidPoint = 149597871 * Math.sqrt(baseMass);
+	var minOrbit = minimalOrbit;
 	var i = 0;
 	for(i = 0; i < numPlanets; i++){
 		if (Math.random() <= 0.9){
+			var planetRadius = 20 * Math.random();
+			minOrbit += planetRadius + 50;
 			if (distance < CHZ_MidPoint + 39597871 && distance > CHZ_MidPoint - 39597871){
-				planet = addPlanet(pivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass * baseMass, distance), 2 * 3.14 * Math.random(), 50 + Math.random() * 100, 1);
+				planet = addPlanet(pivot, planetRadius, distance * distanceMultiplier, getOrbitalPeriod(solarMass * baseMass, distance), 2 * 3.14 * Math.random(), 50 + Math.random() * 100, 1, minOrbit);
 			} else {
-				planet = addRockyBody(pivot, 20 * Math.random(), distance * distanceMultiplier, getOrbitalPeriod(solarMass * baseMass, distance), 2 * 3.14 * Math.random(), 50 + Math.random() * 100, 1);
+				planet = addRockyBody(pivot, planetRadius, distance * distanceMultiplier, getOrbitalPeriod(solarMass * baseMass, distance), 2 * 3.14 * Math.random(), 50 + Math.random() * 100, 1, minOrbit);
 			}
-			generateMoons(planet);
+			generateMoons(planet, planetRadius*2);
 		} else {
-			binary = addEmptyBody(pivot, distance * distanceMultiplier, getOrbitalPeriod(solarMass * baseMass, distance), 2 * 3.14 * Math.random(), true);
-			binaryOrbitDistance = 1650000 + Math.random() * 1650000;
 			var planetMass1 = 20 * Math.random();
 			var planetMass2 = 20 * Math.random();
+			minOrbit += planetMass1 + planetMass2 + 50;
+			binary = addEmptyBody(pivot, distance * distanceMultiplier, getOrbitalPeriod(solarMass * baseMass, distance), 2 * 3.14 * Math.random(), true, minOrbit);
+			binaryOrbitDistance = 1650000 + Math.random() * 1650000;
 			var planet1;
 			var planet2;
 			if (distance < CHZ_MidPoint + 39597871 && distance > CHZ_MidPoint - 39597871){
-				planet1 = addPlanet(binary, planetMass1, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), 0, 50 + Math.random() * 100, 1);
+				planet1 = addPlanet(binary, planetMass1, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), 0, 50 + Math.random() * 100, 1, (planetMass1 + planetMass2 + 50) * distanceMultiplier);
 			} else {
-				planet1 = addRockyBody(binary, planetMass1, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), 0, 50 + Math.random() * 100, 1);
+				planet1 = addRockyBody(binary, planetMass1, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), 0, 50 + Math.random() * 100, 1, (planetMass1 + planetMass2 + 50) * distanceMultiplier);
 			}
 			
-			generateMoons(planet1);
+			generateMoons(planet1, planetMass1*2);
 			
 			if (distance < CHZ_MidPoint + 39597871 && distance > CHZ_MidPoint - 39597871){
-				planet2 = addPlanet(binary, planetMass2, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), toRad(180), 50 + Math.random() * 100, 1);
+				planet2 = addPlanet(binary, planetMass2, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), toRad(180), 50 + Math.random() * 100, 1, (planetMass1 + planetMass2 + 50) * distanceMultiplier);
 			} else {
-				planet2 = addRockyBody(binary, planetMass2, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), toRad(180), 50 + Math.random() * 100, 1);
+				planet2 = addRockyBody(binary, planetMass2, binaryOrbitDistance * distanceMultiplier, getOrbitalPeriod((planetMass1 + planetMass2) * earthMass, binaryOrbitDistance), toRad(180), 50 + Math.random() * 100, 1, (planetMass1 + planetMass2 + 50) * distanceMultiplier);
 			}
-			generateMoons(planet2);
+			generateMoons(planet2, planetMass1*2);
 		}
 		distance += distanceIncreaseBase + distanceIncreaseRandom * Math.random();
 	}
 }
 
-function generateMoons(pivot){
+function generateMoons(pivot, minimalOrbit){
 	var j = 0;
 	var numMoons = Math.floor(Math.random() * 5);
+	var minOrbit = minimalOrbit;
 	moonDistance = 165000 + Math.random() * 165000
 	for(j = 0; j < numMoons; j++){
-		moon = addRockyBody(pivot, 1 * Math.random(), Math.max(moonDistance * distanceMultiplier, 1.0), getOrbitalPeriod(earthMass, moonDistance), 2 * 3.14 * Math.random(), Math.random() * 30 + 30, 2);
+		var moonRadius = 1 * Math.random();
+		minOrbit += moonRadius + 5;
+		moon = addRockyBody(pivot, 1 * Math.random(), Math.max(moonDistance * distanceMultiplier, 1.0), getOrbitalPeriod(earthMass, moonDistance), 2 * 3.14 * Math.random(), Math.random() * 30 + 30, 2, minOrbit);
 		moonDistance += 16500 + Math.random() * 265000;
 	}
 }
@@ -257,11 +261,11 @@ function focusPlanet(planetID){
 function changeOrbitScale(){
 	scene.traverse(function(object) {
 		if (object.name == "OrbitLine") {
-			var scale = getScaledDistance(0.5);
+			var scale = Math.max(object.UserData['minOrbit'] / 2, getScaledDistance(0.5));
 			object.scale.set(scale*2, scale*2, scale*2);
 		} else if (object.name == "OrbitingBodyPivot") {
 			var dist = object.UserData['baseOrbit'];
-			object.position.set(getScaledDistance(dist), 0, 0);
+			object.position.set(Math.max(getScaledDistance(dist), object.UserData['minOrbit']), 0, 0);
 		}
 	});
 }
@@ -336,8 +340,8 @@ function deltaTime(){
  * @radius - radius of the orbit
  * @return - THREE.Line
  */
-function createCircle(radius){
-	segments = 64,
+function createCircle(radius, minimalOrbit){
+	segments = 128,
 	material = new THREE.LineBasicMaterial( { color: 0x33383e } ),
 	geometry = new THREE.CircleGeometry( radius, segments );
 	
@@ -347,6 +351,7 @@ function createCircle(radius){
 	circle.position.set(0.0, 0.0, 0.0);
 	circle.rotation.set(toRad(90.0), 0.0, 0.0);
 	circle.name = "OrbitLine";
+	circle.UserData = {'minOrbit': minimalOrbit };
 
 	return circle;
 }
