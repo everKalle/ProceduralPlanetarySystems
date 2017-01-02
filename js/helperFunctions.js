@@ -58,6 +58,14 @@ function getLogarithmicScaledDistance(dist){
 	return 50 * Math.log(dist);
 }
 
+function betaLeft(){
+	//http://stackoverflow.com/questions/16110758/generate-random-number-with-a-non-uniform-distribution
+	unif = Math.random();
+	beta = Math.pow(Math.sin(unif*Math.PI/2),10);
+	beta_left = (beta < 0.5) ? 2*beta : 2*(1-beta);
+	return beta_left;
+}
+
 /**
  * Scales a distance based on the selected scaling type
  *

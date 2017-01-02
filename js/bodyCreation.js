@@ -172,17 +172,20 @@ function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotati
  *
  * //TODO: arguments
  */
-function addEmptyBody(parentPivot, orbit){	//TODO: üsna lõpetamata see, vaja argumendid: orbitSpeed, baseOrbitRotation, rotationalSpeed nagu teistel.
+function addEmptyBody(parentPivot, orbit, orbitSpeed, baseRotation, drawOrbit){	//TODO: üsna lõpetamata see, vaja argumendid: orbitSpeed, baseOrbitRotation, rotationalSpeed nagu teistel.
 	var pivot = new THREE.Object3D();
 	pivot.name = "OrbitingBodyPivot";
+	pivot.UserData = {'baseOrbit' : orbit };
 	var orbitPivot = new THREE.Object3D();
 	orbitPivot.name = "Orbit";
-	orbitPivot.UserData = {'speed' : 300, 'baseRotation' : 0};
+	orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseRotation};
 	pivot.position.set(orbit, 0, 0);
 	orbitPivot.add(pivot);
 	parentPivot.add(orbitPivot);
 	
-	parentPivot.add( createCircle(orbit) );
+	if (orbit>0 && drawOrbit){
+		parentPivot.add( createCircle(orbit) );
+	}
 	
-	return (pivot);
+	return pivot;
 }

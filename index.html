@@ -293,6 +293,43 @@
 				cursor: pointer;
 			}
 		</style>
+		
+		<!-- https://mikethedj4.github.io/Webkit-Scrollbar-Generator/ -->
+		<style type="text/css">
+		::-webkit-scrollbar {
+		  width: 5px;
+		  height: 5px;
+		}
+		::-webkit-scrollbar-button {
+		  width: 0px;
+		  height: 0px;
+		}
+		::-webkit-scrollbar-thumb {
+		  background: #919191;
+		  border: 0px none #ffffff;
+		  border-radius: 0px;
+		}
+		::-webkit-scrollbar-thumb:hover {
+		  background: #d7d7d7;
+		}
+		::-webkit-scrollbar-thumb:active {
+		  background: #ffffff;
+		}
+		::-webkit-scrollbar-track {
+		  background: #000000;
+		  border: 0px none #ffffff;
+		  border-radius: 50px;
+		}
+		::-webkit-scrollbar-track:hover {
+		  background: #000000;
+		}
+		::-webkit-scrollbar-track:active {
+		  background: #000000;
+		}
+		::-webkit-scrollbar-corner {
+		  background: transparent;
+		}
+		</style>
 	</head>
 	<body onload="onLoad()">
 		<div id="canvasContainer"></div>
@@ -303,7 +340,7 @@
 		</div>
 		<div style="position: absolute; background-color: rgba(0,0,0,0.5); color: white; left: 20px; bottom: 20px; padding-left: 10px; padding-right: 10px;">
 		<p id = "showhideList" onclick="showhidePlanetList()">SHOW PLANET LIST</p>
-		<div id="planetContainer" style="display: none">
+		<div id="planetContainer" style="display: none; overflow: auto; width: 200px; max-height: 75vh;">
 			-----------------
 		</div>
 		</div>
@@ -315,7 +352,9 @@
 			<p id="body-mass">Space - make camera track the active body<br>
 			(the one displayed in the upper-left corner)
 			</p>
-			<p id="genButton"><button type="button" onclick="procedularGeneration()">Generate new system</button></p>
+			<br>
+			<!--<p id="genButton"><button type="button" onclick="procedularGeneration()">Generate new system</button></p>-->
+			<p id="genButton" onclick="procedularGeneration()" style="border: 1px solid #FFF">Generate new system</p>
 		</div>
 		<script>
 			var shown = false;
