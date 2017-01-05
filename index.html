@@ -82,6 +82,7 @@
 				float f = planetSurfaceNoise(interpolatedLocalPosition);
 				f +=  1.0 * noise(4.0 * interpolatedLocalPosition + vec3(starAnimation) * 1.0);
 				f +=  0.5 * noise(33.0 * interpolatedLocalPosition + vec3(starAnimation2) * 5.0);
+				//f = abs(f);
 				
 				float f2 = 0.0;
 				f2 += 1.0 * noise(3.0 * interpolatedLocalPosition + vec3(3,3,3));
@@ -157,19 +158,28 @@
 									  dot( hash( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
 			}
 			
-			float planetSurfaceNoise (in vec3 p){
+			float planetSurfaceNoise (in vec3 p, in float wl){
 				float f = 0.0;
-				f += 1.0 * noise(3.0 * p);
+				f += 1.0 * noise(2.0 * p);
 				f += 1.0 * noise(4.0 * p);
 				f += 0.5 * noise(10.0 * p);
 				f -= 0.5 * noise(30.0 * p);
+				/*if (f > wl + 0.01){
+					f = max(f, 1.0 * noise(4.0 * p));
+					//f += 1.0 * noise(4.0 * p);
+					//f = max(f, 1.0 * noise(10.0 * p));
+					f += 0.5 * noise(10.0 * p);
+					f += 0.5 * noise(30.0 * p);
+				} else {
+					f += 0.1 * noise(15.0 * p);
+				}*/
 				return f;
 			}
 			
 			void main() {
 				
-				float f = planetSurfaceNoise(interpolatedLocalPosition);
-				//float f = planetSurfaceNoise(vec3(interpolatedLocalPosition.x / 10.0, interpolatedLocalPosition.y, interpolatedLocalPosition.z / 10.0));
+				float f = planetSurfaceNoise(interpolatedLocalPosition, waterLevel);
+				//float f = planetSurfaceNoise(vec3(interpolatedLocalPosition.x / 10.0, interpolatedLocalPosition.y, interpolatedLocalPosition.z / 10.0), waterLevel);
 				
 				float f2 = 0.0;
 				f2 += 1.0 * noise(3.0 * interpolatedLocalPosition + vec3(3,3,3));
@@ -177,8 +187,8 @@
 				f2 += 0.5 * noise(33.0 * interpolatedLocalPosition + vec3(3,3,3));
 				//f2 = pow(f2, 3.);
 				
-				vec2 gradient = vec2((planetSurfaceNoise(interpolatedLocalPosition - vec3(0.01, 0.0, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.01, 0.0, 0.0))),
-									(planetSurfaceNoise(interpolatedLocalPosition - vec3(0.0, 0.01, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.00, 0.01, 0.0))));
+				vec2 gradient = vec2((planetSurfaceNoise(interpolatedLocalPosition - vec3(0.01, 0.0, 0.0), waterLevel)) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.01, 0.0, 0.0), waterLevel)),
+									(planetSurfaceNoise(interpolatedLocalPosition - vec3(0.0, 0.01, 0.0), waterLevel)) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.00, 0.01, 0.0), waterLevel)));
 				
 				vec3 normalShift = vec3(2.0 * gradient ,0.0) * nMtrx;
 				
@@ -204,6 +214,98 @@
 				
 				color += max(0.0, dot(interpolatedNormal,lightDir)) * atmosphereColor * pow((1.0 - max(0.0, dot(interpolatedNormal, viewerDir))), 1.0);		//ATMOSPHERIC EFFECTS
 				color += vec3(1.0, 1.0, 1.0)*max(0.0, f2)*max(0.0, dot(interpolatedNormal,lightDir));
+				
+				gl_FragColor = vec4(color, 1.0);
+			}
+		</script>
+		
+		<script id="planetFragmentShader" type="x-shader/x-fragment">
+			varying vec3 interpolatedLocalPosition;
+			uniform vec3 lightPosition;
+			uniform vec3 waterColor;
+			uniform vec3 atmosphereColor;
+			uniform vec3 groundColor;
+			uniform vec3 groundColor2;
+			uniform vec3 groundColor3;
+			uniform float activeVolcanism;
+			varying vec3 interpolatedPosition;
+			varying vec3 interpolatedNormal;
+			varying mat3 nMtrx;
+			
+			//Source: https://www.shadertoy.com/view/Xsl3Dl
+			vec3 hash(vec3 p) {
+				p = vec3( dot(p, vec3(127.1,311.7, 74.7)),
+						  dot(p, vec3(269.5,163.3,226.1)),
+						  dot(p, vec3(113.5,271.9,124.6)));
+						  
+				return -1.0 + 2.0*fract(sin(p)*43758.5453123);
+			}
+			
+			//Source: https://www.shadertoy.com/view/Xsl3Dl
+			float noise(in vec3 p) {
+				vec3 i = floor( p );
+				vec3 f = fract( p );
+				
+				//vec3 u = f*f*(3.0-2.0*f);
+				vec3 u = f*f*(3.0-2.0*f);
+
+				return mix( mix( mix( dot( hash( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), 
+									  dot( hash( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),
+								 mix( dot( hash( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), 
+									  dot( hash( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),
+							mix( mix( dot( hash( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), 
+									  dot( hash( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),
+								 mix( dot( hash( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), 
+									  dot( hash( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
+			}
+			
+			float planetSurfaceNoise (in vec3 p){
+				float f = 0.0;
+				f += 1.0 * noise(2.0 * p);
+				f += 1.0 * noise(4.0 * p);
+				f += 0.5 * noise(10.0 * p);
+				f -= 0.5 * noise(30.0 * p);
+				return f;
+			}
+			
+			void main() {
+				
+				float f = planetSurfaceNoise(interpolatedLocalPosition);
+				
+				float f2 = 0.0;
+				f2 += 1.0 * noise(3.0 * interpolatedLocalPosition + vec3(3,3,3));
+				f2 += 0.5 * noise(15.0 * interpolatedLocalPosition + vec3(3,3,3));
+				f2 += 0.5 * noise(33.0 * interpolatedLocalPosition + vec3(3,3,3));
+				//f2 = pow(f2, 3.);
+				
+				vec2 gradient = vec2((planetSurfaceNoise(interpolatedLocalPosition - vec3(0.01, 0.0, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.01, 0.0, 0.0))),
+									(planetSurfaceNoise(interpolatedLocalPosition - vec3(0.0, 0.01, 0.0))) - (planetSurfaceNoise(interpolatedLocalPosition + vec3(0.00, 0.01, 0.0))));
+				
+				vec3 normalShift = vec3(2.0 * gradient ,0.0) * nMtrx;
+				
+				vec3 n = normalize(interpolatedNormal + normalShift);
+				vec3 vertexPosition = interpolatedPosition;
+				vec3 lightDir = normalize(lightPosition - vertexPosition);
+				vec3 viewerDir = normalize(-vertexPosition);
+				vec3 reflection = reflect(-lightDir,n);
+				vec3 h = normalize(lightDir + viewerDir);
+				
+				vec3 color;
+				if (f<0.05) {
+					color = max(0.0, dot(n,lightDir)) * groundColor3;
+				} else if (f<0.1) {
+					color = max(0.0, dot(n,lightDir)) * groundColor;
+				} else {
+					color = max(0.0, dot(n,lightDir)) * groundColor2;
+				}
+				
+				if (activeVolcanism == 1.0){
+					float f3 = abs(planetSurfaceNoise(interpolatedLocalPosition)) - planetSurfaceNoise(interpolatedLocalPosition) * 0.1;
+					if (f3 > 0.5){
+						color = vec3(1.0,0.0,0.0) * f3;
+					}
+				}
+				
 				
 				gl_FragColor = vec4(color, 1.0);
 			}

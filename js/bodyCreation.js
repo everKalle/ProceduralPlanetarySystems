@@ -11,7 +11,7 @@
  *
  * @return - Pivot of the planet
  */
-function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
+function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
 	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
 	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit};
@@ -41,12 +41,56 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 		typeName += " with water based life";
 	}
 	
-	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed};
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject};
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 	
 	planet.add(sphere);
 	
 	pivot.position.set(orbit, 0, 0);
+	pivot.rotation.set(0,0,0);
+	pivot.add(planet);
+	
+	orbitPivot.add(pivot);
+	parentPivot.add(orbitPivot);
+
+	parentPivot.add( createCircle(orbit, minimalOrbit/orbit) );
+	
+	return pivot;
+}
+
+
+function addPlanetOther(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
+	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
+	pivot.name = "OrbitingBodyPivot";
+	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit};
+	
+	var orbitPivot = new THREE.Object3D();		// Pivot controlling orbiting of this planet
+	orbitPivot.name = "Orbit";
+	orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseOrbitRotation};
+	
+	var planet = new THREE.Mesh();
+	
+	var volcanism = 0.0;
+	typeName = "Metallic Planet"
+	
+	if (Math.random() > 0.93){
+		volcanism = 1.0;
+		typeName = "Metallic Planet with active volcanism";
+	}
+	
+	var sphere = createSphereOther(volcanism);
+	sphere.scale.set(radius * 2, radius * 2, radius * 2);
+	sphere.name = "NonStellar";
+	
+	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
+	
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject};
+	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
+	
+	planet.add(sphere);
+	
+	pivot.position.set(orbit, 0, 0);
+	pivot.rotation.set(0,0,0);
 	pivot.add(planet);
 	
 	orbitPivot.add(pivot);
@@ -69,7 +113,7 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
  *
  * @return - Pivot of the body
  */
-function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit) {
+function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject) {
 	var pivot = new THREE.Object3D();			//Body's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
 	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit };
@@ -96,12 +140,13 @@ function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation,
 	
 	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
 	
-	sphere.UserData = {'type': bodyType, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed};//Siia erinevad tyybid icy/rocky/metal etc. icy jaoks vist läheb teistsugust shaderit vaja, need suht siledad
+	sphere.UserData = {'type': bodyType, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject};//Siia erinevad tyybid icy/rocky/metal etc. icy jaoks vist läheb teistsugust shaderit vaja, need suht siledad
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + bodyType + '</p>');
 	
 	planet.add(sphere);
 	
 	pivot.position.set(orbit, 0, 0);
+	pivot.rotation.set(0,0,0);
 	pivot.add(planet);
 	
 	orbitPivot.add(pivot);
