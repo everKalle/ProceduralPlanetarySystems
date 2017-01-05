@@ -88,6 +88,9 @@ function onLoad() {
 		if (event.keyCode == 32) { //<SPACE>
 			if (camera.parent != focusedObject.parent){
 				focusedObject.parent.add(camera);
+				camPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
+				camPos = camPos.normalize().multiplyScalar(focusedObject.scale.x * 10);
+				camera.position.set(camPos.x, camPos.y, camPos.z);
 				controls.target = new THREE.Vector3(focusedObject.position.x,focusedObject.position.y,focusedObject.position.z);
 				controls.update();
 			} else {
@@ -242,6 +245,9 @@ function generateMoons(pivot, minimalOrbit, lightObject){
 function focusPlanet(planetID){
 	var planet = scene.getObjectById( planetID, true );
 	planet.parent.add(camera);
+	camPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
+	camPos = camPos.normalize().multiplyScalar(planet.children[0].scale.x * 10);
+	camera.position.set(camPos.x, camPos.y, camPos.z);
 	controls.target = new THREE.Vector3(planet.position.x,planet.position.y,planet.position.z);
 	controls.update();
 	var data = planet.children[0].UserData;
