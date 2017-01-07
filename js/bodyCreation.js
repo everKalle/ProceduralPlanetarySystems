@@ -90,8 +90,15 @@ function addPlanetGasGiant(parentPivot, radius, orbit, orbitSpeed, baseOrbitRota
 	
 	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
-	
+
 	planet.add(sphere);
+
+	var geometry = new THREE.RingGeometry(200, 400, 64, 2, 0, Math.PI * 2);
+    var ring = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({map: ringNoiseTexture, transparent: true}));
+    ring.material.side = THREE.DoubleSide;
+    ring.position.set(0,0,0);
+	ring.rotation.set(1.5708,0,0)
+	planet.add(ring)
 	
 	pivot.position.set(orbit, 0, 0);
 	pivot.rotation.set(0,0,0);
