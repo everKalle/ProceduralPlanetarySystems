@@ -68,7 +68,7 @@ function createSphereEarthlike(waterLevel) {
 function createSphereGasGiant() {
 	var geometry = new THREE.SphereGeometry(1, 20, 16);
 
-	var gasGiantAtmoColor = gasGiantColors[randomInt(5)];
+	var gasGiantAtmoColor = gasGiantColors[randomInt(9)];
 
 	var color1 = new THREE.Color(gasGiantAtmoColor[0]);
 	var color2 = new THREE.Color(gasGiantAtmoColor[1]);
