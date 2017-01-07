@@ -64,6 +64,33 @@ function createSphereEarthlike(waterLevel) {
 	return sphere;
 }
 
+
+function createSphereGasGiant() {
+	var geometry = new THREE.SphereGeometry(1, 20, 16);
+
+	var gasGiantAtmoColor = gasGiantColors[randomInt(5)];
+
+	var color1 = new THREE.Color(gasGiantAtmoColor[0]);
+	var color2 = new THREE.Color(gasGiantAtmoColor[1]);
+	var color3 = new THREE.Color(gasGiantAtmoColor[2]);
+
+	var material = new THREE.ShaderMaterial({
+		uniforms: {
+			lightPosition: { value: lightPosition },
+			atmoColor1: { value: color1 },
+			atmoColor2: { value: color2 },
+			atmoColor3: { value: color3 },
+		},
+		vertexShader: vertexShader,
+		fragmentShader: gasGiantFragmentShader
+	});
+	
+	var sphere = new THREE.Mesh(geometry, material);
+	
+	return sphere;
+}
+
+
 function createSphereOther(volcanism) {
 	var geometry = new THREE.SphereGeometry(1, 20, 16);
 

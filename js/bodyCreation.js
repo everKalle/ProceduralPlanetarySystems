@@ -58,6 +58,53 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 	return pivot;
 }
 
+/**
+ * Creates a gas giant
+ * 
+ * @parentPivot - Pivot to orbit
+ * @radius - Radius of the body in Earth Radii
+ * @orbit - Orbit radius
+ * @orbitSpeed - Time it takes to complete one full orbit in seconds
+ * @baseOrbitRotation - How many radians of the orbit has the body completed in the beginning (to give some variance, otherwise all planets start at the same angle and it looks kinda odd)
+ * @rotationalSpeed - How long (in seconds) does it take to complete one full rotation
+*/
+
+function addPlanetGasGiant(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject) {
+	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
+	pivot.name = "OrbitingBodyPivot";
+	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit};
+	
+	var orbitPivot = new THREE.Object3D();		// Pivot controlling orbiting of this planet
+	orbitPivot.name = "Orbit";
+	orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseOrbitRotation};
+	
+	var planet = new THREE.Mesh();
+	
+	var sphere = createSphereGasGiant();
+	sphere.scale.set(radius * 2, radius * 2, radius * 2);
+	sphere.name = "NonStellar";
+	
+	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
+	
+	var typeName = "Gas giant"
+	
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject};
+	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
+	
+	planet.add(sphere);
+	
+	pivot.position.set(orbit, 0, 0);
+	pivot.rotation.set(0,0,0);
+	pivot.add(planet);
+	
+	orbitPivot.add(pivot);
+	parentPivot.add(orbitPivot);
+
+	parentPivot.add( createCircle(orbit, minimalOrbit/orbit) );
+	
+	return pivot;
+}
+
 
 function addPlanetOther(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
 	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
