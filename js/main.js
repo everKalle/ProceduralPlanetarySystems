@@ -172,7 +172,7 @@ function generateStar(pivot, orbit, orbitPeriod, baseRotation, depth, minimalOrb
             var minOrbit = getStellarBodyRadius(starMass1) + getStellarBodyRadius(starMass2) + 50;
             star1 = addStar(binary, starMass1, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), binaryRot, 360000.0 + Math.random() * 15360000.0, minOrbit);
             star2 = addStar(binary, starMass2, binaryOrbitDistance, getOrbitalPeriod(starMass1, binaryOrbitDistance), binaryRot + 180, 360000.0 + Math.random() * 15360000.0, minOrbit);
-            generatePlanets(pivot, starMass, 10, 50082000 + 5820000 * Math.random(), 5082000, 10082000, minOrbit, binary);
+            generatePlanets(binary, starMass, 10, 50082000 + 5820000 * Math.random(), 5082000, 10082000, minOrbit, binary);
         } else {	//Far orbiting stars
 			var binaryOrbitDistance = (getStellarBodyRadius(starMass1)*solarRadius + getStellarBodyRadius(starMass2)*solarRadius + 508200000 + 1082000000 * Math.random()) * distanceMultiplier;
 			
