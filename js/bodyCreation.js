@@ -41,7 +41,7 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 		typeName += " with water based life";
 	}
 	
-	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject};
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 	
 	planet.add(sphere);
@@ -84,7 +84,7 @@ function addPlanetOther(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotatio
 	
 	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
 	
-	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject};
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 	
 	planet.add(sphere);
@@ -170,45 +170,45 @@ function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation,
  * @return - Pivot of the planet
  */
 function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, minimalOrbit) {
-	var pivot = new THREE.Object3D();		//Star's pivot (around which other bodies orbiting it will rotate)
-	pivot.name = "OrbitingBodyPivot";
-	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit };
-	
-	var orbitPivot = new THREE.Object3D();	// Pivot controlling orbiting of this star
-	orbitPivot.name = "Orbit";
-	orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseOrbitRotation};
-	
-	var spectralClass = getSpectralClass(mass);	//Get the star's spectral class based on it's mass
-	var planet = new THREE.Mesh();
-	
-	var sphere = createSphereStar(getStellarBodyColors(spectralClass));
-	var scale = getStellarBodyRadius(mass);
-	sphere.scale.set(scale*2*solarMultiplier, scale*2*solarMultiplier, scale*2*solarMultiplier);
-	sphere.name = "Star";
-	sphere.UserData = {'type': spectralClass + '-Class Star', 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(scale), 'rotationalSpeed': rotationalSpeed};
-	
-	planet.add(sphere);
-	
-	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + spectralClass + '-Class Star</p>');
-	
-	var glowMaterial = new THREE.SpriteMaterial( { map: glowTexture, color: getStellarBodyColors(spectralClass)[1], transparent: false, blending: THREE.AdditiveBlending } );
-	
-	var sprite = new THREE.Sprite( glowMaterial );
-	sprite.scale.set(scale*7*solarMultiplier, scale*7*solarMultiplier, 1.0);
-	planet.add(sprite);
-	
-	pivot.position.set(orbit, 0, 0);
-	pivot.add(planet);
-	
-	orbitPivot.add(pivot);
-	parentPivot.add(orbitPivot);
-	
-	// If the orbit is 0, there is no need to create the orbit line
-	if (orbit>0){
-		parentPivot.add( createCircle(orbit, minimalOrbit/orbit) );
-	}
-	
-	return pivot;
+    var pivot = new THREE.Object3D();        //Star's pivot (around which other bodies orbiting it will rotate)
+    pivot.name = "OrbitingBodyPivot";
+    pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit };
+    
+    var orbitPivot = new THREE.Object3D();    // Pivot controlling orbiting of this star
+    orbitPivot.name = "Orbit";
+    orbitPivot.UserData = {'speed' : orbitSpeed, 'rotation' : baseOrbitRotation};
+    
+    var spectralClass = getSpectralClass(mass);    //Get the star's spectral class based on it's mass
+    var planet = new THREE.Mesh();
+    
+    var sphere = createSphereStar(getStellarBodyColors(spectralClass));
+    var scale = getStellarBodyRadius(mass);
+    sphere.scale.set(scale*2*solarMultiplier, scale*2*solarMultiplier, scale*2*solarMultiplier);
+    sphere.name = "Star";
+    sphere.UserData = {'type': spectralClass + '-Class Star', 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(scale), 'rotationalSpeed': rotationalSpeed, 'rotation': 0};
+    
+    planet.add(sphere);
+    
+    $("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + spectralClass + '-Class Star</p>');
+    
+    var glowMaterial = new THREE.SpriteMaterial( { map: glowTexture, color: getStellarBodyColors(spectralClass)[1], transparent: false, blending: THREE.AdditiveBlending } );
+    
+    var sprite = new THREE.Sprite( glowMaterial );
+    sprite.scale.set(scale*7*solarMultiplier, scale*7*solarMultiplier, 1.0);
+    planet.add(sprite);
+    
+    pivot.position.set(orbit, 0, 0);
+    pivot.add(planet);
+    
+    orbitPivot.add(pivot);
+    parentPivot.add(orbitPivot);
+    
+    // If the orbit is 0, there is no need to create the orbit line
+    if (orbit>0){
+        parentPivot.add( createCircle(orbit, minimalOrbit/orbit) );
+    }
+    
+    return pivot;
 }
 
 /**
