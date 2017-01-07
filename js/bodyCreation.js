@@ -11,7 +11,7 @@
  *
  * @return - Pivot of the planet
  */
-function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
+function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject, rocheLimit) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
 	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
 	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit};
@@ -45,6 +45,15 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 	
 	planet.add(sphere);
+
+	if (Math.random() <= 0.1) {
+		var geometry = new THREE.RingGeometry((radius * earthRadius * 2 + radius * earthRadius * 2 / 8.615) * distanceMultiplier, rocheLimit * distanceMultiplier, 64, 2, 0, Math.PI * 2);
+		var ring = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({map: ringNoiseTexture, transparent: true, color: ringColors[randomInt(8)]}));
+		ring.material.side = THREE.DoubleSide;
+		ring.position.set(0,0,0);
+		ring.rotation.set(1.5708,0,0)
+		planet.add(ring)
+	}
 	
 	pivot.position.set(orbit, 0, 0);
 	pivot.rotation.set(0,0,0);
@@ -69,7 +78,7 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
  * @rotationalSpeed - How long (in seconds) does it take to complete one full rotation
 */
 
-function addPlanetGasGiant(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject) {
+function addPlanetGasGiant(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject, rocheLimit) {
 	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
 	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit};
@@ -93,12 +102,14 @@ function addPlanetGasGiant(parentPivot, radius, orbit, orbitSpeed, baseOrbitRota
 
 	planet.add(sphere);
 
-	var geometry = new THREE.RingGeometry(200, 400, 64, 2, 0, Math.PI * 2);
-    var ring = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({map: ringNoiseTexture, transparent: true}));
-    ring.material.side = THREE.DoubleSide;
-    ring.position.set(0,0,0);
-	ring.rotation.set(1.5708,0,0)
-	planet.add(ring)
+	if (Math.random() <= 0.75) {
+		var geometry = new THREE.RingGeometry((radius * earthRadius * 2 + radius * earthRadius * 2 / 8.615) * distanceMultiplier, rocheLimit * distanceMultiplier, 64, 2, 0, Math.PI * 2);
+		var ring = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({map: ringNoiseTexture, transparent: true, color: ringColors[randomInt(8)]}));
+		ring.material.side = THREE.DoubleSide;
+		ring.position.set(0,0,0);
+		ring.rotation.set(1.5708,0,0)
+		planet.add(ring)
+	}
 	
 	pivot.position.set(orbit, 0, 0);
 	pivot.rotation.set(0,0,0);
@@ -113,7 +124,7 @@ function addPlanetGasGiant(parentPivot, radius, orbit, orbitSpeed, baseOrbitRota
 }
 
 
-function addPlanetOther(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
+function addPlanetOther(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, rotationalSpeed, depth, minimalOrbit, lightObject, rocheLimit) {	//TODO: vaja lisada argumendid, et muuta orbiidi rotationit (ka kõigi järgnevate meetodite jaoks). massi ka ei anta ette.
 	var pivot = new THREE.Object3D();			//Planet's pivot (around which other bodies orbiting it will rotate)
 	pivot.name = "OrbitingBodyPivot";
 	pivot.UserData = {'baseOrbit' : orbit, 'minOrbit': minimalOrbit};
@@ -125,11 +136,11 @@ function addPlanetOther(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotatio
 	var planet = new THREE.Mesh();
 	
 	var volcanism = 0.0;
-	typeName = "Metallic Planet"
+	typeName = "Metallic Body"
 	
 	if (Math.random() > 0.93){
 		volcanism = 1.0;
-		typeName = "Metallic Planet with active volcanism";
+		typeName = "Metallic Body with active volcanism";
 	}
 	
 	var sphere = createSphereOther(volcanism);
@@ -142,6 +153,15 @@ function addPlanetOther(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotatio
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 	
 	planet.add(sphere);
+
+	if (Math.random() <= 0.2) {
+		var geometry = new THREE.RingGeometry((radius * earthRadius * 2 + radius * earthRadius * 2 / 8.615) * distanceMultiplier, rocheLimit * distanceMultiplier, 64, 2, 0, Math.PI * 2);
+		var ring = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({map: ringNoiseTexture, transparent: true, color: ringColors[randomInt(8)]}));
+		ring.material.side = THREE.DoubleSide;
+		ring.position.set(0,0,0);
+		ring.rotation.set(1.5708,0,0)
+		planet.add(ring)
+	}
 	
 	pivot.position.set(orbit, 0, 0);
 	pivot.rotation.set(0,0,0);
