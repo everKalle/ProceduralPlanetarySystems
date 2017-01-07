@@ -41,7 +41,7 @@ function addPlanet(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation, ro
 		typeName += " with water based life";
 	}
 	
-	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'orbitPeriod': orbitSpeed, 'orbitRadius': orbit/distanceMultiplier, 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 	
 	planet.add(sphere);
@@ -97,7 +97,7 @@ function addPlanetGasGiant(parentPivot, radius, orbit, orbitSpeed, baseOrbitRota
 	
 	var typeName = "Gas giant"
 	
-	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'orbitPeriod': orbitSpeed, 'orbitRadius': orbit/distanceMultiplier, 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 
 	planet.add(sphere);
@@ -149,7 +149,7 @@ function addPlanetOther(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotatio
 	
 	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
 	
-	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
+	sphere.UserData = {'type': typeName, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'orbitPeriod': orbitSpeed, 'orbitRadius': orbit/distanceMultiplier, 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + typeName + '</p>');
 	
 	planet.add(sphere);
@@ -214,7 +214,7 @@ function addRockyBody(parentPivot, radius, orbit, orbitSpeed, baseOrbitRotation,
 	
 	var mass = radius - (radius / 5) + Math.random() * (radius / 2);
 	
-	sphere.UserData = {'type': bodyType, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};//Siia erinevad tyybid icy/rocky/metal etc. icy jaoks vist läheb teistsugust shaderit vaja, need suht siledad
+	sphere.UserData = {'type': bodyType, 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(radius), 'orbitPeriod': orbitSpeed, 'orbitRadius': orbit/distanceMultiplier, 'rotationalSpeed': rotationalSpeed, 'lightObject': lightObject, 'rotation': 0};//Siia erinevad tyybid icy/rocky/metal etc. icy jaoks vist läheb teistsugust shaderit vaja, need suht siledad
 	$("#planetContainer").append('<p onclick="focusPlanet(' + planet.id + ')">' + '&nbsp;'.repeat(depth) + bodyType + '</p>');
 	
 	planet.add(sphere);
@@ -259,7 +259,7 @@ function addStar(parentPivot, mass, orbit, orbitSpeed, baseOrbitRotation, rotati
     var scale = getStellarBodyRadius(mass);
     sphere.scale.set(scale*2*solarMultiplier, scale*2*solarMultiplier, scale*2*solarMultiplier);
     sphere.name = "Star";
-    sphere.UserData = {'type': spectralClass + '-Class Star', 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(scale), 'rotationalSpeed': rotationalSpeed, 'rotation': 0};
+    sphere.UserData = {'type': spectralClass + '-Class Star', 'mass': roundToTwoDecimals(mass), 'radius': roundToTwoDecimals(scale), 'orbitPeriod': orbitSpeed, 'orbitRadius': orbit/distanceMultiplier, 'rotationalSpeed': rotationalSpeed, 'rotation': 0};
     
     planet.add(sphere);
     

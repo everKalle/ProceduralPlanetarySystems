@@ -80,6 +80,20 @@ function getScaledDistance(dist){
 	}
 }
 
+function periodString(t){
+	if (t < 60){
+		return roundToTwoDecimals(t) + " seconds";
+	} else if (t < 3600){
+		return roundToTwoDecimals(t / 60) + " minutes";
+	} else if (t < 86400){
+		return roundToTwoDecimals(t / 3600) + " hours";
+	} else if (t < 31556926) {
+		return roundToTwoDecimals(t / 86400) + " days";
+	} else {
+		return roundToTwoDecimals(t / 31556926) + " years";
+	}
+}
+
 function onMouseMove( event ) {
 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;		

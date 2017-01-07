@@ -280,10 +280,21 @@ function focusPlanet(planetID){
 		$("#body-class").html(data['type']);
 		$("#body-mass").html('Mass: ' + data['mass'] + ' Earth Masses');
 		$("#body-radius").html('Radius: ' + data['radius'] + ' Earth Radii');
+		$("#body-orbit-period").html('Orbit Period: ' + periodString(data['orbitPeriod']));
+		$("#body-orbit-radius").html('Orbit Radius: ' + roundToTwoDecimals(data['orbitRadius'] / 299792) + " light seconds");
+		$("#body-rotational-period").html('Rotational Period: ' + periodString(data['rotationalSpeed']));
 	} else if (planet.children[0].name == "Star") {
 		$("#body-class").html(data['type']);
 		$("#body-mass").html('Mass: ' + data['mass'] + ' Solar Masses');
 		$("#body-radius").html('Radius: ' + data['radius'] + ' Solar Radii');
+		if (data['orbitRadius'] == 0){
+			$("#body-orbit-period").html('')
+			$("#body-orbit-radius").html('');
+		} else {
+			$("#body-orbit-period").html('Orbit Period: ' + periodString(data['orbitPeriod']));
+			$("#body-orbit-radius").html('Orbit Radius: ' + roundToTwoDecimals(data['orbitRadius'] / 299792) + " light seconds");
+		}
+		$("#body-rotational-period").html('Rotational Period: ' + periodString(data['rotationalSpeed']));
 	}
 	focusedObject = planet;
 }
@@ -333,6 +344,9 @@ function draw() {
 				$("#body-class").html(data['type']);
 				$("#body-mass").html('Mass: ' + data['mass'] + ' Earth Masses');
 				$("#body-radius").html('Radius: ' + data['radius'] + ' Earth Radii');
+				$("#body-orbit-period").html('Orbit Period: ' + periodString(data['orbitPeriod']));
+				$("#body-orbit-radius").html('Orbit Radius: ' + roundToTwoDecimals(data['orbitRadius'] / 299792) + " light seconds");
+				$("#body-rotational-period").html('Rotational Period: ' + periodString(data['rotationalSpeed']));
 				focusedObject = object;
 			}
 		} else if (object.name == "Star"){
@@ -350,6 +364,14 @@ function draw() {
 				$("#body-class").html(data['type']);
 				$("#body-mass").html('Mass: ' + data['mass'] + ' Solar Masses');
 				$("#body-radius").html('Radius: ' + data['radius'] + ' Solar Radii');
+				if (data['orbitRadius'] == 0){
+					$("#body-orbit-period").html('')
+					$("#body-orbit-radius").html('');
+				} else {
+					$("#body-orbit-period").html('Orbit Period: ' + periodString(data['orbitPeriod']));
+					$("#body-orbit-radius").html('Orbit Radius: ' + roundToTwoDecimals(data['orbitRadius'] / 299792) + " light seconds");
+				}
+				$("#body-rotational-period").html('Rotational Period: ' + periodString(data['rotationalSpeed']));
 				focusedObject = object;
 			}
 		} else if (object.name == "Orbit"){
